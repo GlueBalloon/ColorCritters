@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Buffer Order</key>
+	<array>
+		<string>Main</string>
+		<string>Tests</string>
+		<string>RootFunctions</string>
+		<string>TouchColorTest</string>
+		<string>CompareHSBTest</string>
+		<string>ColorCombiningTest</string>
+		<string>MainForDemos</string>
+		<string>ColorCritter</string>
+		<string>Field</string>
+		<string>Demo1_Still</string>
+		<string>Demo2_Avoiding</string>
+		<string>Demo3_Filler</string>
+		<string>Demo4_AccidentalBlobs</string>
+		<string>Demo5_Mating</string>
+		<string>Demo7_TinyBreeders</string>
+		<string>Demo8_Breeders</string>
+		<string>Aggression</string>
+		<string>Demo9_FrameRateAdjusting</string>
+		<string>Demo6_PickyMating</string>
+	</array>
+	<key>Dependencies</key>
+	<array>
+		<string>Documents:DraggableSafariView</string>
+	</array>
+</dict>
+</plist>
