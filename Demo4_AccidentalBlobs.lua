@@ -1,4 +1,5 @@
 function Field:draw()
+    
     self:drawAndSwapBuffer()
     
     background(self.backgroundColor)

@@ -1,4 +1,164 @@
 
+function drawFullCurve()
+    pushStyle()
+    stroke(100, 233, 80)
+    fill(102, 233, 80)
+    maxWidth = WIDTH
+    maxHeight = HEIGHT * 30
+    maxGrowthRate = 200
+    local curve = {}
+    local growthRate = 0.01 -- starting growth rate
+    local x = 50
+    
+    for i = 1, maxWidth * 1.1 do
+        growthRate = growthRate + 0.001 * (i/maxWidth) -- increase growth rate
+        local y = maxHeight * growthRate/(maxGrowthRate - i/8) -- calculate y position based on growth rate
+        curve[i] = vec2(x, y + 50)
+        x = x + 0.8
+    end
+    for _, dot in ipairs(curve) do
+        ellipse(dot.x, dot.y, 4)
+    end
+    popStyle()
+    return curve
+end
+
+function simulateGrowth(y, dt)
+    local maxGrowthRate = 200
+    local growthRate = y / (HEIGHT * 1000) * maxGrowthRate
+    local dy = growthRate * dt * 1000
+    return y + dy
+end
+
+function simulateGrowthReversed(y, dt)
+    local maxGrowthRate = 200
+    local levelOffY = 600
+    local slopeChangePoint = 40
+    local growthRate = ((levelOffY - y) / (levelOffY - slopeChangePoint)) * maxGrowthRate
+    local dy = growthRate * dt * 1.5
+    return y + dy
+end
+
+
+
+
+function simulateGrowthCombined(y, dt, ry)
+    local maxGrowthRate = 200
+    local levelOffY = 600
+    local slopeChangePoint = levelOffY / 2
+    local growthRate
+    local dy
+    if not rCache then
+        rCache = {simulateGrowthReversed(ry, dt)} 
+        incrementer = 1
+    else
+        rCache[#rCache+1] = simulateGrowthReversed(ry, dt)
+    end
+    if y <= slopeChangePoint then
+        if rCache[#rCache] < slopeChangePoint then
+            incrementer = incrementer + 1
+        end
+        return simulateGrowth(y, dt), rCache[#rCache]
+    else
+        returnValue = rCache[incrementer]
+        incrementer = incrementer + 1
+        return returnValue, rCache[#rCache]
+    end
+end
+
+function simulateGrowth(y, dt)
+    local maxGrowthRate = 200
+    local levelOffY = 600
+    local slopeChangePoint = levelOffY / 2
+    local growthRate, dy
+    
+    if y <= slopeChangePoint then
+        growthRate = y / (HEIGHT * 1000) * maxGrowthRate
+    else
+        local reversedY = levelOffY - y
+        growthRate = reversedY / (HEIGHT * 1000) * maxGrowthRate
+    end
+    
+    dy = growthRate * dt * 1000
+    return y + dy
+end
+
+function simulateGrowth(y, dt)
+    local maxGrowthRate = 200
+    local levelOffY = 50
+    local slopeChangePoint = levelOffY / 2
+    local growthRate, dy
+    
+    if y <= slopeChangePoint then
+        growthRate = y / (HEIGHT * 1000) * maxGrowthRate
+    else
+        local reversedY = levelOffY - y
+        growthRate = reversedY / (HEIGHT * 1000) * maxGrowthRate
+    end
+    
+    dy = growthRate * dt * 1000
+    return y + dy
+end
+
+
+function drawGrowthCurve()
+    if not skip then
+        xValues = {}
+        yValues = {}
+        growthRate = 0.1
+        for i = 1, 2000 do
+            table.insert(xValues, i + 50)
+            table.insert(yValues, growthRate)
+            growthRate = growthRate + (i / 1000000)
+        end
+        skip = true
+        
+        curvey = drawFullCurve()
+        y = simulateGrowth(1, DeltaTime)
+        bitty = {vec2(50, y + 50)}
+        yy = simulateGrowthReversed(1, DeltaTime)
+        bittybitty = {vec2(50, yy + 50)} 
+        cy, ry = simulateGrowthCombined(1, DeltaTime, 1)
+        combo = {vec2(50, cy + 50)} 
+        comboR = {vec2(50, ry + 65)} 
+    end
+    if true then return end
+    strokeWidth(2)
+    for i = 2, #xValues do
+        --    line(xValues[i-1], yValues[i-1]*HEIGHT-50, xValues[i], yValues[i]*HEIGHT - 50)
+    end
+    
+    
+    drawAxes()
+    --  drawFullCurve()
+    
+    y = simulateGrowth(y, DeltaTime)
+    yy = simulateGrowthReversed(yy, DeltaTime)
+    cy, ry = simulateGrowthCombined(cy, DeltaTime, ry)
+    table.insert(bitty, vec2(#bitty + 51, y + 50))
+    table.insert(bittybitty, vec2(#bittybitty + 51, yy + 60))
+    table.insert(combo, vec2(#combo + 51, cy + 55))
+    table.insert(comboR, vec2(#comboR + 51, ry + 65))
+    fill(123, 233, 80)
+    drawVecTable(bitty)
+    fill(233, 80, 131)
+    drawVecTable(bittybitty)
+    fill(89, 80, 233)
+    drawVecTable(combo)
+    fill(217, 233, 80)
+    drawVecTable(comboR)
+end
+
+
+
+function drawVecTable(dots, radius)
+    radius = radius or 4
+    for _, dot in ipairs(dots) do
+        ellipse(dot.x, dot.y, radius)
+    end
+end
+    
+    
 function testFindMedianFps()
     local field = Field()
     local testPairs = {}

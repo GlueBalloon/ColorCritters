@@ -13,16 +13,17 @@
 		<string>MainForDemos</string>
 		<string>ColorCritter</string>
 		<string>Field</string>
-		<string>Demo1_Still</string>
 		<string>Demo2_Avoiding</string>
-		<string>Demo3_Filler</string>
-		<string>Demo4_AccidentalBlobs</string>
 		<string>Demo5_Mating</string>
 		<string>Demo7_TinyBreeders</string>
 		<string>Demo8_Breeders</string>
 		<string>Aggression</string>
-		<string>Demo9_FrameRateAdjusting</string>
 		<string>Demo6_PickyMating</string>
+		<string>Demo4_AccidentalBlobs</string>
+		<string>Demo1_Still</string>
+		<string>Demo3_Painters</string>
+		<string>Demo10_GroupPainters</string>
+		<string>Demo9_FrameRateAdjusting</string>
 	</array>
 	<key>Dependencies</key>
 	<array>

@@ -3,11 +3,11 @@ ColorCritter = class()
 function ColorCritter:init(size, speed, strength, aColor, 
     aggression, position, direction, timeToFertility, 
     mateColorVariance, mortality)
-    self.size = size or math.random(5, 30)
+    self.size = size or math.random(9, 30)
     self.speed = speed or math.random(2, 8)
     self.strength = strength or math.random(1, 5)
     self.color = aColor or color(math.random(0,255), math.random(0,255), math.random(0,255))
-  --  self.color = aColor or hsbToColor(math.random(360),  math.random(), math.random())
+    self.color = aColor or hsbToColor(math.random(360),  math.random(23, 100) * 0.01, math.random(23, 100) * 0.01)
     self.aggression = aggression or math.random(0, 1000) * 0.001
     self.position = position or vec2(math.random(WIDTH), math.random(HEIGHT))
     self.direction = direction or vec2(math.random()-0.5, math.random()-0.5):normalize()

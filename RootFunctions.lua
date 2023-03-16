@@ -41,43 +41,70 @@ function screenWrapping(point)
     return point
 end
 
+local function round(num, places)
+    local xNum = num * (10^places)
+    local rNum = xNum + (2^52 + 2^51) - (2^52 + 2^51)
+    return rNum / (10^places)
+end
+
 --------= color stuff
 
-function colorToHSB(c)
-    local r, g, b = c.r, c.g, c.b
-    local max = math.max(r, g, b)
-    local min = math.min(r, g, b)
+function colorToHSB(aColor)
+    local r, g, b = aColor.r / 255, aColor.g / 255, aColor.b / 255
+    local max, min = math.max(r, g, b), math.min(r, g, b)
     local delta = max - min
     
-    local h, s, v = 0, 0, max
-    
-    if max ~= 0 then
-        s = delta / max
-        if r == max then
-            h = (g - b) / delta
-        elseif g == max then
-            h = 2 + (b - r) / delta
+    local hue = 0
+    if delta ~= 0 then
+        if max == r then
+            hue = ((g - b) / delta) % 6
+        elseif max == g then
+            hue = ((b - r) / delta) + 2
         else
-            h = 4 + (r - g) / delta
+            hue = ((r - g) / delta) + 4
         end
-        h = h * 60
-        if h < 0 then
-            h = h + 360
-        end
+        hue = hue * 60
+        if hue < 0 then hue = hue + 360 end
     end
     
-    return h, s, v
+    local saturation = (max == 0) and 0 or (delta / max)
+    
+    local brightness = max
+    
+    return hue, saturation, brightness
 end
 
-function hsbToColor (h, s, b)
-    local min, max, abs = math.min, math.max, math.abs
-    local k1 = b*(1-s)
-    local k2 = b - k1
-    local R = min (max (3*abs (((h      )/180)%2-1)-1, 0), 1)
-    local G = min (max (3*abs (((h  -120)/180)%2-1)-1, 0), 1)
-    local B = min (max (3*abs (((h  +120)/180)%2-1)-1, 0), 1)
-    return color(k1 + k2 * R, k1 + k2 * G, k1 + k2 * B)
+function hsbToColor(h, s, b)
+    h = h % 360
+    s = math.max(0, math.min(1, s))
+    b = math.max(0, math.min(1, b))
+    
+    local i = math.floor(h / 60)
+    local f = (h / 60) - i
+    local p = b * (1 - s)
+    local q = b * (1 - (s * f))
+    local t = b * (1 - (s * (1 - f)))
+    
+    local r1, g1, b1
+    
+    if i == 0 then
+        r1, g1, b1 = b, t, p
+    elseif i == 1 then
+        r1, g1, b1 = q, b, p
+    elseif i == 2 then
+        r1, g1, b1 = p, b, t
+    elseif i == 3 then
+        r1, g1, b1 = p, q, b
+    elseif i == 4 then
+        r1, g1, b1 = t, p, b
+    else
+        r1, g1, b1 = b, p, q
+    end
+    
+    return color(math.floor(r1 * 255), math.floor(g1 * 255), math.floor(b1 * 255))
 end
+
+
 
 function randomizeColorWithinVariance(aColor, variance, bias)
     local hsb = vec3(colorToHSB(aColor))
@@ -144,9 +171,8 @@ function getHueDifference(color1, color2)
     return difference
 end
 
-
-function hueFromColor(color)
-    local r, g, b = color.r / 255, color.g / 255, color.b / 255
+function hueFromColor(aColor)
+    local r, g, b = aColor.r / 255, aColor.g / 255, aColor.b / 255
     local max = math.max(r, g, b)
     local min = math.min(r, g, b)
     local delta = max - min
@@ -162,6 +188,32 @@ function hueFromColor(color)
     end
 end
 
+function saturationFromColor(aColor, rounding)
+    local min = math.min(aColor.r, aColor.g, aColor.b) / 255
+    local max = math.max(aColor.r, aColor.g, aColor.b) / 255
+    local delta = max - min
+    
+    local saturation = 0.0
+    if max ~= 0 then
+        saturation = delta / max
+    end
+    if rounding then
+        return round(saturation, rounding)
+    else 
+        return saturation
+    end 
+end
+
+function brightnessFromColor(aColor, rounding)
+    local max = math.max(aColor.r, aColor.g, aColor.b)
+    local brightness = max / 255
+    if rounding then
+        return round(brightness, rounding)
+    else 
+        return brightness
+    end 
+end
+
 function testHueFromColor()
     print("hue tests")
     print(hueFromColor(color(255, 0, 0)) == 0)
@@ -174,135 +226,6 @@ function testHueFromColor()
     print(hueFromColor(color(0, 0, 0)) == 0)
 end
 
-
-function colorsExceedVarianceRGB(color1, color2, variance)
-    local allowedVarianceScaled = 255 * variance
-    local higherColor = {math.max(color1.r, color2.r), math.max(color1.g, color2.g), math.max(color1.b, color2.b)}
-    local lowerColor = {math.min(color1.r, color2.r), math.min(color1.g, color2.g), math.min(color1.b, color2.b)}
-    local actualVariance = {higherColor[1] - lowerColor[1], higherColor[2] - lowerColor[2], higherColor[3] - lowerColor[3]}
-    if actualVariance[1] > allowedVarianceScaled or actualVariance[2] > allowedVarianceScaled or actualVariance[3] > allowedVarianceScaled then
-        return true
-    else
-        return false
-    end
-end
-
---[[
-function saturationBoost(aColor, decimalMinimum)
-    decimalMinimum = decimalMinimum or 0.5
-    local h, s, b = colorToHSB(aColor)
-    if s > decimalMinimum then return aColor end
-    local boostRange = math.floor((1 - decimalMinimum) * 100)
-    if s < decimalMinimum then s = s + math.random(boostRange) * 0.01 end
-    return hsbToColor(h, s, b)
-end
-
-function brightnessBoost(aColor, integerMinimum)
-    minSaturation = minSaturation or 200
-    local h, s, b = colorToHSB(aColor)
-    if b > integerMinimum then return aColor end
-    local boostRange = 255 - integerMinimum
-    if b < integerMinimum then b = b + math.random(boostRange) end
-    return hsbToColor(h, s, b)
-end
-
-function saturationFromColor(color)
-    -- Convert RGB values to percentages
-    local r = color.r / 255
-    local g = color.g / 255
-    local b = color.b / 255
-    
-    -- Find the minimum and maximum RGB values
-    local min = math.min(r, g, b)
-    local max = math.max(r, g, b)
-    
-    -- Calculate the difference between the minimum and maximum RGB values
-    local delta = max - min
-    
-    -- Calculate the saturation
-    local saturation = 0.0
-    if max ~= 0 then
-        saturation = delta / max
-    end
-    
-    -- Print the intermediate results
-    
-    print("RGB values:", r, g, b)
-    print("Minimum RGB value:", min)
-    print("Maximum RGB value:", max)
-    print("Delta:", delta)
-    print("Saturation:", saturation)
-    
-    
-    return delta
-end
-
-function saturationFromColor(aColor)
-    
-    r, g, b = aColor.r / 255, aColor.g / 255, aColor.b / 255
-    
-    local max, min = math.max(r, g, b), math.min(r, g, b)
-    local h, s, l
-    
-    l = (max + min) / 2
-    
-    if max == min then
-        h, s = 0, 0 -- achromatic
-    else
-        local d = max - min
-        local s
-        if l > 0.5 then s = d / (2 - max - min) else s = d / (max + min) end
-        if max == r then
-            h = (g - b) / d
-            if g < b then h = h + 6 end
-        elseif max == g then h = (b - r) / d + 2
-        elseif max == b then h = (r - g) / d + 4
-        end
-        h = h / 6
-    end
-    
-    print("RGB values:", r,g,b )
-    print("Minimum RGB value:", min)
-    print("Maximum RGB value:", max)
-    print("l:", l)
-    print("Saturation:", s)
-    
-    if true then return s or 1.0 end
-    
-    	local R = aColor.r / 255
-    	local G = aColor.g / 255
-    	local B = aColor.b / 255
-    local max, min = math.max(R, G, B), math.min(R, G, B)
-    	local l, s, h
-    
-    	-- Get luminance
-    	l = (max + min) / 2
-    
-    	-- short circuit saturation and hue if it's grey to prevent divide by 0
-    	if max == min then
-        		s = 0
-        		h = obj.h or obj[4] or 0
-        		return s
-    	end
-    
-    	-- Get saturation
-    	if l <= 0.5 then s = (max - min) / (max + min)
-    	else s = (max - min) / (2 - max - min)
-    	end
-    
-    
-    print("RGB values:", R, G, B)
-    print("Minimum RGB value:", min)
-    print("Maximum RGB value:", max)
-    print("b:", l)
-    print("Saturation:", s)
-    
-    
-    	return s
-end
-
-
-
 function testSaturationFromColor()
     print("saturation tests")
     local red = color(255, 0, 0)
@@ -310,35 +233,107 @@ function testSaturationFromColor()
     local blue = color(0, 0, 255)
     local purple = color(77, 32, 96)
     local yellow = color(255, 255, 0)
-    print(colorToHSB(red) == 1) -- prints "true"
-    local fullRed = colorToHSB(red)
-    local darkerRed = colorToHSB(color(204, 0, 0))
-    local darkerDarkerRed = colorToHSB(color(153, 0, 0))
-    local darkestRed = colorToHSB(color(102, 0, 0))
-    print(fullRed, fullRed == 1) -- prints "true"
-    print(darkerRed, darkerRed == 0.8) -- prints "true"
-    print(darkerDarkerRed, darkerDarkerRed == 0.6) -- prints "true"
-    print(darkestRed, darkestRed == 0.4) -- prints "true"
+    print(saturationFromColor(red) == 1) -- prints "true"
+    print(saturationFromColor(color(202, 33, 33), 3) == 0.837) -- prints "true"
+    print(saturationFromColor(color(139, 33, 33), 3) == 0.763) -- prints "true"
+    print(saturationFromColor(color(87, 33, 33), 3) == 0.621) -- prints "true"
     print(saturationFromColor(green) == 1) -- prints "true"
-    print(saturationFromColor(color(0, 204, 0)), saturationFromColor(color(0, 204, 0)) == 0.8) -- prints "true"
-    print(saturationFromColor(color(0, 153, 0)), saturationFromColor(color(0, 153, 0)) == 0.6) -- prints "true"
-    print(saturationFromColor(color(0, 102, 0)), saturationFromColor(color(0, 102, 0)) == 0.4) -- prints "true"
+    print(saturationFromColor(color(28, 204, 28), 3) == 0.863) -- prints "true"
+    print(saturationFromColor(color(28, 153, 28), 3) == 0.817) -- prints "true"
+    print(saturationFromColor(color(28, 102, 28), 3) == 0.725) -- prints "true"
     print(saturationFromColor(blue) == 1) -- prints "true"
-    print(saturationFromColor(color(0, 0, 204)) == 0.8) -- prints "true"
-    print(saturationFromColor(color(0, 0, 153)) == 0.6) -- prints "true"
-    print(saturationFromColor(color(0, 0, 102)) == 0.4) -- prints "true"
-    print("purple, ",saturationFromColor(purple), saturationFromColor(purple) == 0.94) -- prints "true"
-    print(saturationFromColor(color(120, 24, 180)), saturationFromColor(color(120, 24, 180)) == 0.7109375) -- prints "true"
-    print(saturationFromColor(color(80, 16, 120)), saturationFromColor(color(80, 16, 120)) == 0.7109375) -- prints "true"
-    print(saturationFromColor(color(40, 8, 60)) == 0.7109375) -- prints "true"
+    print(saturationFromColor(color(12, 12, 204), 3) == 0.941) -- prints "true"
+    print(saturationFromColor(color(12, 12, 153), 3) == 0.922) -- prints "true"
+    print(saturationFromColor(color(12, 12, 102), 3) == 0.882) -- prints "true"
+    print(saturationFromColor(purple, 3) == 0.667) -- prints "true"
+    print(saturationFromColor(color(120, 24, 180), 3) == 0.867) -- prints "true"
+    print(saturationFromColor(color(80, 16, 120), 3) == 0.867) -- prints "true"
+    print(saturationFromColor(color(40, 8, 60), 3) == 0.867) -- prints "true"
     print(saturationFromColor(yellow) == 1) -- prints "true"
-    print(saturationFromColor(color(204, 204, 0)) == 0.8) -- prints "true"
-    print(saturationFromColor(color(153, 153, 0)) == 0.6) -- prints "true"
-    print(saturationFromColor(color(102, 102, 0)) == 0.4) -- prints "true"
-    local randomColor = color(math.random(255), math.random(255), math.random(255))
-    print(saturationFromColor(randomColor)) -- prints saturation of the random color
-    print(randomColor) -- prints the RGB values of the random color
+    print(saturationFromColor(color(243, 243, 37), 3) == 0.848) -- prints "true"
+    print(saturationFromColor(color(139, 139, 59), 3) == 0.576) -- prints "true"
+    print(saturationFromColor(color(100, 100, 32), 3) == 0.68) -- prints "true"
 end
 
+function testBrightnessFromColor()
+    print("brightness tests")
+    local gray1 = color(30, 30, 30)
+    local gray2 = color(80, 80, 80)
+    local gray3 = color(130, 130, 130)
+    local gray4 = color(180, 180, 180)
+    local color1 = color(176, 34, 34)
+    local color2 = color(120, 224, 120)
+    local color3 = color(36, 22, 234)
+    local color4 = color(234, 199, 26)
+    
+    print(brightnessFromColor(gray1, 2) == 0.12)
+    print(brightnessFromColor(gray2, 2) == 0.31)
+    print(brightnessFromColor(gray3, 2) == 0.51)
+    print(brightnessFromColor(gray4, 2) == 0.71)
+    print(brightnessFromColor(color1, 2) == 0.69)
+    print(brightnessFromColor(color2, 2) == 0.88)
+    print(brightnessFromColor(color3, 2) == 0.92)
+    print(brightnessFromColor(color4, 2) == 0.92)
+end
 
-]]
+function testHSBtoRGB()
+    print("hsbToColor tests")
+    -- Test 1: black
+    local black = color(0, 0, 0)
+    local h, s, b = colorToHSB(black)
+    local result = hsbToColor(h, s, b)
+    assert(result.r == 0 and result.g == 0 and result.b == 0, "Test 1 failed")
+    print(true)
+    
+    -- Test 2: white
+    local white = color(255, 255, 255)
+    h, s, b = colorToHSB(white)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 255 and result.g == 255 and result.b == 255, "Test 2 failed")
+    print(true)
+    
+    -- Test 3: red
+    local red = color(255, 0, 0)
+    h, s, b = colorToHSB(red)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 255 and result.g == 0 and result.b == 0, "Test 3 failed")
+    print(true)
+    
+    -- Test 4: green
+    local green = color(0, 255, 0)
+    h, s, b = colorToHSB(green)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 0 and result.g == 255 and result.b == 0, "Test 4 failed")
+    print(true)
+    
+    -- Test 5: blue
+    local blue = color(0, 0, 255)
+    h, s, b = colorToHSB(blue)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 0 and result.g == 0 and result.b == 255, "Test 5 failed")
+    print(true)
+    
+    -- Test 6: purple
+    local purple = color(128, 0, 128)
+    h, s, b = colorToHSB(purple)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 128 and result.g == 0 and result.b == 128, "Test 6 failed")
+    print(true)
+    
+    -- Test 7: yellow
+    local yellow = color(255, 255, 0)
+    h, s, b = colorToHSB(yellow)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 255 and result.g == 255 and result.b == 0, "Test 7 failed")
+    print(true)
+    
+    -- Test 8: cyan
+    local cyan = color(0, 255, 255)
+    h, s, b = colorToHSB(cyan)
+    result = hsbToColor(h, s, b)
+    assert(result.r == 0 and result.g == 255 and result.b == 255, "Test 8 failed")
+    print(true)
+    
+    print("All HSB to RGB tests passed!")
+end
+
