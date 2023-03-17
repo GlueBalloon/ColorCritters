@@ -1,9 +1,9 @@
 
-
+--teeny tiny breeders without any population cap
 function Field:draw()
     function newCritter(pos)
         local new = ColorCritter()
-        new.size = math.random(5, 12)
+        new.size = math.random(5, 8)
         new.speed = math.random(5, 18)
         new.timeToFertility = math.random(60, 110)
         new.mortality = new.timeToFertility * math.random(40, 50) * 0.1

@@ -1,3 +1,5 @@
+
+--first ever drawing of critters   
 function Field:draw()
     background(231, 96, 89)
     for i, critter in ipairs(self.critters) do

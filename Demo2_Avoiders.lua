@@ -1,10 +1,9 @@
+
+--critters that try to avoid each other (but don't always succeed)
 function Field:draw()
-    self:drawAndSwapBuffer()
-    
-    background(self.backgroundColor)
-    
-    for _, critter in ipairs(self.critters) do
-        
+    self:drawAndSwapBuffer()   
+    background(self.backgroundColor)   
+    for _, critter in ipairs(self.critters) do       
         -- Find a point outside the critter
         local outsidePoint = critter:pointOutsideSelf()       
         -- find direction to that point
@@ -22,7 +21,9 @@ function Field:draw()
             --if so, store the new direction
             critter.direction = outsideDirection
         else
-            -- if not, recalculate position without change of direction 
+            -- if not, reverse direction
+            critter.direction = vec2(-outsideDirection.x, -outsideDirection.y)
+            --recalculate position 
             local recalculated = critter.position + critter.direction * critter.speed
             nextPosition = self:wrapIfNeeded(recalculated)
         end

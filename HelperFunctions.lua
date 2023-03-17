@@ -15,6 +15,14 @@ function printRarely(...)
     end   
 end
 
+function randomFromScreen(percent)
+    local max = math.max(WIDTH, HEIGHT)
+    local product = max * percent
+    local integer = math.ceil(product * 10000000000)
+    local random = math.random(integer)
+    return random / 10000000000
+end
+
 function adjustFontSize(thisText, maxWidth)
     local size = 0
     while true do
@@ -45,6 +53,46 @@ local function round(num, places)
     local xNum = num * (10^places)
     local rNum = xNum + (2^52 + 2^51) - (2^52 + 2^51)
     return rNum / (10^places)
+end
+
+function drawAxes()
+    -- Draw x and y axes
+    strokeWidth(2)
+    line(50,50,50,HEIGHT)
+    line(50,50,WIDTH,50)
+    
+    -- Draw tick marks on y-axis
+    for i=0,35 do
+        line(40,50+i*30,50,50+i*30)
+    end
+    
+    -- Draw tick marks on x-axis
+    for i=0,70 do
+        line(50+i*30,40,50+i*30,50)
+    end
+end
+
+function drawAxesWithTicks(interval)
+    interval = interval or 100
+    pushStyle()
+    -- Draw the x-axis
+    strokeWidth(2)
+    stroke(224, 213, 138)
+    line(50, 50, WIDTH - 50, 50)
+    
+    -- Draw the y-axis
+    line(50, 50, 50, HEIGHT - 50)
+    
+    -- Draw tick marks on the x-axis
+    for x = interval, WIDTH, interval do
+        line(x, 50, x, 60)
+    end
+    
+    -- Draw tick marks on the y-axis
+    for y = interval, HEIGHT, interval do
+        line(50, y, 60, y)
+    end
+    popStyle()
 end
 
 --------= color stuff
@@ -103,8 +151,6 @@ function hsbToColor(h, s, b)
     
     return color(math.floor(r1 * 255), math.floor(g1 * 255), math.floor(b1 * 255))
 end
-
-
 
 function randomizeColorWithinVariance(aColor, variance, bias)
     local hsb = vec3(colorToHSB(aColor))

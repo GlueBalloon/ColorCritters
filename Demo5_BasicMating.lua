@@ -1,5 +1,5 @@
 
-    
+--any critter will mate with any other critter
 function Field:draw()
     if not isSetUp then
         isSetUp = true

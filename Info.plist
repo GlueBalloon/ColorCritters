@@ -4,26 +4,24 @@
 <dict>
 	<key>Buffer Order</key>
 	<array>
+		<string>Main_FromFirstTry</string>
+		<string>Main_WithTests</string>
 		<string>Main</string>
-		<string>Tests</string>
-		<string>RootFunctions</string>
-		<string>TouchColorTest</string>
-		<string>CompareHSBTest</string>
-		<string>ColorCombiningTest</string>
-		<string>MainForDemos</string>
 		<string>ColorCritter</string>
 		<string>Field</string>
-		<string>Demo2_Avoiding</string>
-		<string>Demo5_Mating</string>
-		<string>Demo7_TinyBreeders</string>
-		<string>Demo8_Breeders</string>
-		<string>Aggression</string>
-		<string>Demo6_PickyMating</string>
+		<string>HelperFunctions</string>
+		<string>Demo1_Stillness</string>
+		<string>Demo2_Avoiders</string>
+		<string>Demo3_Streakers</string>
 		<string>Demo4_AccidentalBlobs</string>
-		<string>Demo1_Still</string>
-		<string>Demo3_Painters</string>
-		<string>Demo10_GroupPainters</string>
-		<string>Demo9_FrameRateAdjusting</string>
+		<string>Demo5_BasicMating</string>
+		<string>Demo6_PickyMating</string>
+		<string>Demo7_JitteryBreeders</string>
+		<string>Demo7_TinyBreeders</string>
+		<string>Demo10_GroupStreakers</string>
+		<string>Demo11_Aggression</string>
+		<string>Restoration</string>
+		<string>Demo9_FPSCappedBreeders</string>
 	</array>
 	<key>Dependencies</key>
 	<array>

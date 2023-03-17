@@ -1,3 +1,5 @@
+
+--just like the streakers demo except the critters multiply
 function Field:draw()
 
     function newCritter(pos)
@@ -26,7 +28,6 @@ function Field:draw()
     pushStyle()
     noStroke()
     setContext(self.buffer)
-    --background(self.backgroundColor)   
     
     local deaths = {}
     self.babies = {}

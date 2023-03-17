@@ -1,3 +1,5 @@
+
+--a fun accident that was kept because it's fun
 function Field:draw()
     
     self:drawAndSwapBuffer()

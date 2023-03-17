@@ -1,5 +1,5 @@
 
-
+--critters that aren't close in color won't mate
 function Field:draw()
     -- scenario-specific creature settings
     function scenarioSettings(critter)

@@ -1,8 +1,11 @@
+
+--critters that travel in a straight line, painting the screen
 function Field:draw()
     for i, critter in ipairs(self.critters) do
         -- Calculate new position based on direction and speed
         local newPosition = critter.position + critter.direction * critter.speed
-        
+   
+             
         -- Wrap around the edges if the new position is out of bounds
         newPosition = self:wrapIfNeeded(newPosition)
         

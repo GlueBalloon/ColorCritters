@@ -11,10 +11,12 @@ function Field:init(critters)
     self.lastBuffer = self.buffer
     self.fps = 60
     self.babies = {}
+    self.ageTable = {}
     self.oldest = {}
     self.fpsHistory = {}
     self.targetPopulation = nil
     self.populationHistory = {}
+    self.numToCull = 0
 end
 
 function Field:resetCritters(numNew)
@@ -109,7 +111,6 @@ function Field:removeRandomCritters(adjustment)
         adjustment = adjustment - 1
     end
 end
-    
 
 function Field:getPopulationForFpsTarget(medianFps, medianPopulation, targetFps)
     local ratio = medianPopulation / medianFps

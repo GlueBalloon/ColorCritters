@@ -1,19 +1,22 @@
 
-
+--look at 'em jitter around! no population cap
 function Field:draw()
+    
+    function respawn()
+        field.critters = {}
+        local limit = math.ceil(randomFromScreen(0.5))
+        for i = 1, limit do
+            defineCritter(ColorCritter())
+        end
+    end
     function defineCritter(critter, pos)
-        critter.size = math.random(12, 12)
+        critter.size = randomFromScreen(0.03)
         critter.speed = math.random(5, 30)
         critter.timeToFertility = math.random(4, 665)
         critter.position = pos or critter.position
         table.insert(field.critters, critter)
     end
-    function respawn()
-        field.critters = {}
-        for i = 1, 1000 do
-            defineCritter(ColorCritter())
-        end
-    end
+    --setup functions
     if not isSetUp then
         isSetUp = true
         self.backgroundColor = color(37, 37, 41)
@@ -24,6 +27,8 @@ function Field:draw()
     background(self.backgroundColor)
     
     local babies = {}
+    
+    --manually control critters
     for _, critter in ipairs(self.critters) do
         --advance fertility
         critter.fertilityCounter = critter.fertilityCounter + 1
