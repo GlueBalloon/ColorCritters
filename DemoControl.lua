@@ -11,6 +11,8 @@ function DemoControl:init()
     self.demoCount = 0
     self.iosSlider = nil
     self.sliderHandler = nil
+    self.lastSliderValue = 1
+    self.touchActive = false
 end
 
 -- Other functions remain the same
@@ -32,6 +34,7 @@ end
 
 function DemoControl:updateDemoAndReset(newDemoIndex)
     -- Update the selected demo and call resetFunction
+    self.lastSliderValue = newDemoIndex
     self.selectedDemo = newDemoIndex
     self.demoChangedTime = ElapsedTime
     self:resetFunction()
@@ -40,11 +43,12 @@ end
 function DemoControl:makeiOSControl()
     SliderValueHandler = objc.class("SliderValueHandler")
     function SliderValueHandler:sliderValueChanged_(objcArgs)
+        demoControl.touchActive = true
         local steps = #demoControl.demoDrawFunctions
         local stepValue = 1
         local roundedValue = math.floor((objcArgs.value + stepValue / 2) / stepValue) * stepValue
+        if demoControl.lastSliderValue == roundedValue then return end
         objcArgs:setValue_(roundedValue, true) -- Set rounded value to the slider
-        print("Slider value:", roundedValue)     
         -- Update the selected demo and call resetFunction
         demoControl.updateDemoAndReset(demoControl, roundedValue)
     end
@@ -53,22 +57,21 @@ function DemoControl:makeiOSControl()
     local UIScreen = objc.UIScreen
     local UIScreen_mainScreen = UIScreen:mainScreen()
     local UIScreen_mainScreen_bounds = objc.viewer.view.bounds
-    local sliderWidth = 200
+    local sliderWidth = math.floor(WIDTH * 0.45)
     local sliderHeight = 50
     
     self.iosSlider = objc.UISlider()
-    self.iosSlider.frame = objc.rect(sliderWidth, sliderHeight, 
-    UIScreen_mainScreen_bounds.size.width / 2 - sliderWidth / 2, 
-    objc.viewer.view.bounds.size.height - sliderHeight - 20)
-    self.iosSlider:setContinuous_(false)
-    
+    self.iosSlider.frame = objc.rect(math.floor(WIDTH / 2 - sliderWidth / 2), 100,
+    sliderWidth, sliderHeight)
+      
     self.iosSlider:setMinimumValue_(1)
     self.iosSlider:setMaximumValue_(#self.demoDrawFunctions)
     self.iosSlider:setValue_(1)
+    --self.iosSlider:setContinuous_(false)
     
     self.iosSlider:addTarget_action_forControlEvents_(self.sliderHandler, 
     objc.selector("sliderValueChanged:"), 
-    objc.enum.UIControlEvents.touchUpInside)
+    objc.enum.UIControlEvents.touchUpInside | objc.enum.UIControlEvents.valueChanged)
     
     objc.viewer.view:addSubview_(self.iosSlider)
 end
@@ -85,8 +88,10 @@ function DemoControl:drawTitle()
             alpha = 255 * (1 - (elapsedTime - (self.titleFadeSeconds - fadeOutPhase)) / fadeOutPhase)
         end
         
-        local title = self.selectedDemo.." of "..tostring(#self.demoTitles)..": "..tostring(self.demoTitles[self.selectedDemo] or "")
+        local title = self.lastSliderValue.." of "..tostring(#self.demoTitles)..": "..tostring(self.demoTitles[self.lastSliderValue] or "")
         local shadowOffset = vec2(2, -2) -- Offset for the shadow
+        
+        print(title)
         
         -- Draw the shadow
         fill(0, 0, 0, alpha)
@@ -107,7 +112,14 @@ function DemoControl:draw()
     if not self.iosSlider then
         self:makeiOSControl()
     end
-    _ = self.iosSlider.value --needed or slider is buggy
+    sliderValue = self.iosSlider.value --needed or slider is buggy
+    local roundedValue = math.floor(sliderValue + 1 / 2)
+    self.iosSlider:setValue_(roundedValue, true) -- Set rounded value to the slider
+    local sliderChanged = roundedValue ~= self.lastSliderValue
+    if sliderChanged and self.touchActive then
+        self.lastSliderValue = roundedValue
+        self.demoChangedTime = ElapsedTime
+    end
     local drawFunction = self.demoDrawFunctions[self.selectedDemo]
     if drawFunction then
         drawFunction()
@@ -116,9 +128,8 @@ function DemoControl:draw()
         print("Invalid demo selected")
         return 
     end  
-    if self.shouldErase then
-        print("Invalid foop selected")
-        background(255, 203, 0)
-        self.shouldErase = false
-    end
+end
+
+function DemoControl:touched(touch)
+    self.touchActive = touch.state == BEGAN or touch.state == CHANGED
 end

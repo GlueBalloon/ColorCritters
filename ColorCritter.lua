@@ -170,7 +170,7 @@ function ColorCritter:reproduce(mateColor)
     -- Apply mutations if they occur
     if math.random() < self.mutationRate then
         local ogColor = baby.color
-        baby.color = randomizeColorWithinVariance(baby.color, 0.047)
+        baby.color = randomizeColorWithinVariance(baby.color, self.mateColorVariance * 0.085)
         printRarely("(printRarely) mutation at "..tostring(self.position)..
         "\n  - color: "..tostring(ogColor).. "\n  - to color: "..tostring(baby.color))
         baby.speed = math.max(0.1, math.min(40, self.speed + math.random(-math.floor(self.speed/5), math.floor(self.speed/5))))
