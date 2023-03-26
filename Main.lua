@@ -1,4 +1,6 @@
 function setup()
+    print(20 / WIDTH)
+    print(90 / WIDTH)
     if false then
         SliderValueHandler = objc.class("SliderValueHandler")
         function SliderValueHandler:sliderValueChanged_(objcArgs)
@@ -35,16 +37,21 @@ function setup()
         field:resetCritters()
     end
     demoControl:addDemo(Stillness, "Stillness Demo")
-    demoControl:addDemo(Avoiders, "Avoiders")
+    demoControl:addDemo(Movers, "Movers")
     demoControl:addDemo(Streakers, "Streakers")
     demoControl:addDemo(AccidentalBlobs, "Accidental Blobs")
     
 end
 
 function draw()
+    if demoControl.iosSlider and not sliderSet then
+        local last = #demoControl.demoDrawFunctions
+        demoControl.iosSlider:setValue_(last)
+        demoControl:updateDemoAndReset(last)
+        sliderSet = true
+    end
     demoControl:draw()
 end
 
 function touched(touch)
-    print("h")
 end

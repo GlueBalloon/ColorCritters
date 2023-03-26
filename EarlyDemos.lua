@@ -13,7 +13,7 @@ function Stillness()
 end
 
 --critters that try to avoid each other (but don't always succeed)
-function Avoiders()
+function Movers()
     function Field:draw()
         self:drawAndSwapBuffer()   
         background(self.backgroundColor)   
@@ -91,10 +91,6 @@ end
 
 function AccidentalBlobs()
     --a fun accident that was kept because it's fun
-    if not reset2 then
-        field:resetCritters()
-        reset2 = true
-    end
     function Field:draw()
         
         self:drawAndSwapBuffer()
@@ -102,7 +98,9 @@ function AccidentalBlobs()
         background(self.backgroundColor)
         
         if #self.critters > 1000 then
-            self:resetCritters(1)
+            local new = ColorCritter()
+            new.mutationRate = 0.95
+            self.critters = {new}
         end
         local babies = {}
         for _, critter in ipairs(self.critters) do
@@ -126,7 +124,7 @@ function AccidentalBlobs()
                 critter.direction = outsideDirection
             else
                 -- if not, recalculate position without change of direction 
-                local recalculated = critter.position + critter.direction * critter.speed * 2
+                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.1
                 nextPosition = self:wrapIfNeeded(recalculated)
                 --and make baby!
                 local baby = critter:reproduce()

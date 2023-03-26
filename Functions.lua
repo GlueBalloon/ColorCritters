@@ -162,11 +162,37 @@ function hsbToColor(h, s, b)
     return color(math.floor(r1 * 255), math.floor(g1 * 255), math.floor(b1 * 255))
 end
 
-function randomizeColorWithinVariance(aColor, variance, bias)
+--[[
+function randomizeColorWithinVariance(aColor, variance)
     local hsb = vec3(colorToHSB(aColor))
     local varianceScaled = 360 * variance
     local h = randomHueInRange(hsb.x, varianceScaled)
     return hsbToColor(h, hsb.y, hsb.z)
+end
+
+]]
+
+-- Helper function to clamp a value within a range
+function clamp(value, min, max)
+    return math.min(max, math.max(min, value))
+end
+
+-- Function to generate a color copy with random variance
+function randomizeColorWithinVariance(aColor, variance)
+    local h, s, b, a = colorToHSB(aColor)
+    
+    -- Apply random variance to each component
+    local hShift = (math.random() * 2 - 1) * variance * 360 -- Hue ranges from 0 to 360
+    local sShift = (math.random() * 2 - 1) * variance      -- Saturation ranges from 0 to 1
+    local bShift = (math.random() * 2 - 1) * variance      -- Brightness ranges from 0 to 1
+    
+    -- Clamp the new values to ensure they are within the valid range
+    local newH = clamp(h + hShift, 0, 360)
+    local newS = clamp(s + sShift, 0, 1)
+    local newB = clamp(b + bShift, 0, 1)
+    
+    -- Convert back to a color
+    return hsbToColor(newH, newS, newB, a)
 end
 
 function randomHueInRange(value, variance)

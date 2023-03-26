@@ -3,7 +3,9 @@ ColorCritter = class()
 function ColorCritter:init(size, speed, strength, aColor, 
     aggression, position, direction, timeToFertility, 
     mateColorVariance, mortality)
-    self.size = size or math.random(9, 30)
+    local sizeMin = math.ceil(math.max(WIDTH, HEIGHT) * 0.014641288433382)
+    local sizeMax = math.ceil(math.max(WIDTH, HEIGHT) * 0.06588579795022)
+    self.size = size or math.random(sizeMin, sizeMax)
     self.speed = speed or math.random(2, 8)
     self.strength = strength or math.random(1, 5)
     self.color = aColor or color(math.random(0,255), math.random(0,255), math.random(0,255))
@@ -18,6 +20,7 @@ function ColorCritter:init(size, speed, strength, aColor,
     self.mortality = mortality or math.random(200, 50000)
     self.hsbColor = colorToHSB(self.color)
     self.alive = true
+    self.mutationRate = 0.0025 -- chance of mutation
 end
 
 function ColorCritter:update(backgroundImage, backgroundColor)
@@ -145,7 +148,7 @@ end
 
 function ColorCritter:reproduce(mateColor)
     
-    local mutationRate = 0.0025 -- chance of mutation
+    
     local babyColor = self.color
     if mateColor then
         babyColor = randomColorBetween(babyColor, mateColor)
@@ -165,17 +168,11 @@ function ColorCritter:reproduce(mateColor)
     )
 
     -- Apply mutations if they occur
-    if math.random() < mutationRate then
-        baby.mateColorVariance = math.max(0.0, math.min(1, self.mateColorVariance + (math.random(-5,5) * 0.001)))
-        -- baby.mateColorVariance = 1.0
-        printRarely("mutation at "..tostring(self.position).."\n.  mateColorVariance: "..tostring(baby.mateColorVariance))
-        --[[
-        local hsbH, hsbS, hsbB = colorToHSB(baby.color)
-        local newH = randomHueInRange(hsbH, math.min(1, self.mateColorVariance + (math.random(-5,5) * 0.001)))
-        baby.color = hsbToColor(newH, hsbS, hsbB)
-        baby.color = randomizeColorWithinVariance(self.color, math.min(1, self.mateColorVariance + (math.random(-5,5) * 0.001)))
-        baby.hsbColor = colorToHSB(baby.color)
-        ]]
+    if math.random() < self.mutationRate then
+        local ogColor = baby.color
+        baby.color = randomizeColorWithinVariance(baby.color, 0.047)
+        printRarely("(printRarely) mutation at "..tostring(self.position)..
+        "\n  - color: "..tostring(ogColor).. "\n  - to color: "..tostring(baby.color))
         baby.speed = math.max(0.1, math.min(40, self.speed + math.random(-math.floor(self.speed/5), math.floor(self.speed/5))))
         baby.aggression = math.max(0, math.min(100, self.aggression + math.random(-3, 3)))
         baby.strength = math.max(0, math.min(100, self.strength + math.random(-6, 6)))
