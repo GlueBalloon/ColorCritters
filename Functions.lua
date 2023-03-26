@@ -95,6 +95,16 @@ function drawAxesWithTicks(interval)
     popStyle()
 end
 
+function drawVecTable(dots, radius)
+    radius = radius or 4
+    for _, dot in ipairs(dots) do
+        ellipse(dot.x, dot.y, radius)
+    end
+end
+
+
+
+
 --------= color stuff
 
 function colorToHSB(aColor)
@@ -177,15 +187,152 @@ function randomHueInRange(value, variance)
     return fixedResult
 end
 
+function testColorBlending(iterations, blendSteps)
+    math.randomseed(os.time())  -- Ensure random seed
+    
+    local colors = {}
+    for i = 1, iterations do
+        local color1 = color(math.random(0, 255), math.random(0, 255), math.random(0, 255), 255)
+        local color2 = color(math.random(0, 255), math.random(0, 255), math.random(0, 255), 255)
+        
+        for j = 1, blendSteps do
+            local newColor = randomColorBetween(color1, color2)
+            color1, color2 = color2, newColor
+        end
+        
+        table.insert(colors, color2)
+    end
+    
+    for i, col in ipairs(colors) do
+        print("Color", i, ":", col)
+    end
+    
+    local totalRed, totalGreen, totalBlue = 0, 0, 0
+    
+    for i, col in ipairs(colors) do
+        print("Color", i, ":", col)
+        totalRed = totalRed + col.r
+        totalGreen = totalGreen + col.g
+        totalBlue = totalBlue + col.b
+    end
+    
+    local avgRed = totalRed / #colors
+    local avgGreen = totalGreen / #colors
+    local avgBlue = totalBlue / #colors
+    
+    print("Average color:", color(avgRed, avgGreen, avgBlue, 255))
+end 
+
 function randomColorBetween(color1, color2)
-    local r1, g1, b1 = color1.r, color1.g, color1.b
-    local r2, g2, b2 = color2.r, color2.g, color2.b
+    local hsb1 = vec3(colorToHSB(color1))
+    local hsb2 = vec3(colorToHSB(color2))
     
-    local r = math.random() * 255 * (r2 - r1) + r1
-    local g = math.random() * 255 * (g2 - g1) + g1
-    local b = math.random() * 255 * (b2 - b1) + b1
+    local h1, h2 = hsb1.x, hsb2.x
+    local s1, s2 = hsb1.y, hsb2.y
+    local b1, b2 = hsb1.z, hsb2.z
     
-    return color(r, g, b)
+    --set new hue
+    local hueDiff = h2 - h1
+    if math.abs(hueDiff) > 180 then 
+        hueDiff = -sign(hueDiff) * (360 - math.abs(hueDiff))
+    end
+    local hueChange = math.random() * hueDiff
+    local newHue = h1 + hueChange
+    newHue = newHue % 360  -- Wrap the hue value properly
+    
+    --set new saturation
+    local satMin = math.min(s1, s2)
+    local satMax = math.max(s1, s2)
+    local newSat = satMin + math.random() * (satMax - satMin)
+    
+    --set new brightness
+    local briMin = math.min(b1, b2)
+    local briMax = math.max(b1, b2)
+    local newBri = briMin + math.random() * (briMax - briMin)
+    
+    print("oldcolors: ", color1, ", ", color2, "\nnewcolor ", hsbToColor(newHue, newSat, newBri))
+    return hsbToColor(newHue, newSat, newBri)
+end
+
+function weightedRandom(min, max, weight)
+    local randomVal = math.random() * weight + math.random() * (1 - weight)
+    return min + (max - min) * randomVal
+end
+
+function randomColorBetween(color1, color2)
+    local h1, s1, b1 = colorToHSB(color1)
+    local h2, s2, b2 = colorToHSB(color2)
+    
+    -- set new hue
+    local hueDiff = math.abs(h2 - h1)
+    if hueDiff > 180 then
+        hueDiff = 360 - hueDiff
+    end
+    local hueDirection = sign(((h2 - h1) + 360) % 360 - 180)  -- calculate the direction to move along the hue circle
+    local hueChangeProportion = math.random()
+    local newHue = h1 + hueDirection * hueChangeProportion * hueDiff
+    newHue = newHue % 360  -- Wrap the hue value properly
+    
+    
+    
+    -- set new saturation
+    local satMin = math.max(0, math.min(s1, s2) - 0.015)
+    local satMax = 1.0
+    local satChangeProportion = weightedRandom(0, 1, 0.75)
+    local newSat = satMin + satChangeProportion * (satMax - satMin)
+    
+    -- set new brightness
+    local briMin = math.max(0, math.min(b1, b2) - 0.015)
+    local briMax = 1.0
+    local briChangeProportion = weightedRandom(0, 1, 0.75)
+    local newBri = briMin + briChangeProportion * (briMax - briMin)
+    
+    return hsbToColor(newHue, newSat, newBri)
+end
+
+function lerp(a, b, t)
+    return a + (b - a) * t
+end
+
+--[[
+function randomColorBetween(color1, color2)
+    local hsb1 = vec3(colorToHSB(color1))
+    local hsb2 = vec3(colorToHSB(color2))
+    
+    local h1, h2 = hsb1.x, hsb2.x
+    local s1, s2 = hsb1.y, hsb2.y
+    local b1, b2 = hsb1.z, hsb2.z
+    
+    --set new hue
+    local hueDiff = h2 - h1
+    if math.abs(hueDiff) > 180 then 
+        hueDiff = -sign(hueDiff) * (360 - math.abs(hueDiff))
+    end
+    local hueChange = math.random() * hueDiff
+    local newHue = h1 + hueChange
+    newHue = newHue % 360  -- Wrap the hue value properly
+    
+    --set new saturation
+    local t_sat = math.random()^0.5
+    local newSat = lerp(s1, s2, t_sat)
+    
+    --set new brightness
+    local t_bri = math.random()^0.5
+    local newBri = lerp(b1, b2, t_bri)
+    
+    return hsbToColor(newHue, newSat, newBri)
+end
+]]
+
+
+function sign(x)
+    if x < 0 then
+        return -1
+    elseif x > 0 then
+        return 1
+    else
+        return 0
+    end
 end
 
 function colorsExceedVariance(color1, color2, variance)
@@ -197,9 +344,9 @@ function colorsExceedVariance(color1, color2, variance)
         hueDiff = 360 - hueDiff
     end
     
-    local allowedVarianceScaled = 36 * (1 - variance) --why not 360?
+    local allowedVarianceScaled = 360 * variance --why not 360?
     local matingAllowed = not (hueDiff > allowedVarianceScaled)
-    --print("allowedVarianceScaled, hueDiff, matingAllowed ", allowedVarianceScaled, hueDiff, matingAllowed)
+   -- print("allowedVarianceScaled, hueDiff, matingAllowed ", allowedVarianceScaled, ", ", hueDiff, ", ", matingAllowed)
     if hueDiff > allowedVarianceScaled then
         return true
     else

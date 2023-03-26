@@ -4,13 +4,13 @@ function Field:draw()
     -- scenario-specific creature settings
     function scenarioSettings(critter)
         --size range relative to width
-        local sizeBase = math.max(WIDTH, HEIGHT) * 0.06
+        local sizeBase = math.max(WIDTH, HEIGHT) * 0.045
         critter.size = math.random(math.floor(sizeBase), math.floor(sizeBase * 2.8))
         --behaviors
         critter.speed = 27
-        critter.mateColorVariance = 0.10
+        critter.mateColorVariance = 0.45
         critter.timeToFertility = math.random(60, 70)
-        critter.mortality = math.random(70, 90)
+        critter.mortality = math.random(80, 90)
         --colors
         self.backgroundColor = color(21, 21, 31)
         critter.id = "b"
@@ -31,6 +31,7 @@ function Field:draw()
     end    
     -- one-time setup
     if not isSetUp then
+        testGettingColorBetween()
         isSetUp = true
         generations = 0
         showOutsidePoints = false

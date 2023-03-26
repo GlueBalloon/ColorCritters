@@ -2,7 +2,8 @@
 ccTests = {}
 
 function setup()
-    parameter.integer("currentTest", 1, 3)
+    ccTests.leftColor = color(0, 0, 255) -- blue
+    ccTests.rightColor = color(255, 255, 0) -- yellow
     ccTests.randomizeColors()
     ccTests.screenGrab = image(WIDTH, HEIGHT)
     ccTests.variance = 0.4
@@ -46,8 +47,12 @@ function touched(touch)
 end
 
 function ccTests.randomizeColors()
+    --[[
     ccTests.leftColor = color(math.random(255), math.random(255), math.random(255))
     ccTests.rightColor = color(math.random(255), math.random(255), math.random(255))
+    ccTests.leftColor = color(0, 0, 255) -- blue
+    ccTests.rightColor = color(255, 255, 0) -- yellow
+    ]]
     ccTests.centerColor = randomColorBetween(ccTests.leftColor, ccTests.rightColor)
 end
 
@@ -173,12 +178,31 @@ function drawGrowthCurve()
     fill(217, 233, 80)
     drawVecTable(comboR)
 end
-
-function drawVecTable(dots, radius)
-    radius = radius or 4
-    for _, dot in ipairs(dots) do
-        ellipse(dot.x, dot.y, radius)
+    
+function testGettingColorBetween()
+    local color1 = color(0, 0, 255) -- blue
+    local color2 = color(255, 255, 0) -- yellow
+    local numTests = 100
+    
+    for i = 1, numTests do
+        local newColor = randomColorBetween(color1, color2)
+        local newHSB = vec3(colorToHSB(newColor))
+        
+        local minHSB = vec3(colorToHSB(color1))
+        local maxHSB = vec3(colorToHSB(color2))
+        
+        if minHSB.x > maxHSB.x then
+            minHSB, maxHSB = maxHSB, minHSB
+        end
+        
+        if newHSB.x < minHSB.x or newHSB.x > maxHSB.x or
+        newHSB.y < minHSB.y or newHSB.y > maxHSB.y or
+        newHSB.z < minHSB.z or newHSB.z > maxHSB.z then
+            print("Test failed:", i, "New Color:", newColor)
+        else
+            print("Test passed:", i, "New Color:", newColor)
+        end
     end
 end
-    
+
     

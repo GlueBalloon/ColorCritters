@@ -7,21 +7,22 @@
 		<string>Main_FromFirstTry</string>
 		<string>Main_WithTests</string>
 		<string>Main</string>
+		<string>DemoControl</string>
 		<string>ColorCritter</string>
 		<string>Field</string>
-		<string>HelperFunctions</string>
-		<string>Demo1_Stillness</string>
-		<string>Demo2_Avoiders</string>
+		<string>Functions</string>
+		<string>EarlyDemos</string>
 		<string>Demo3_Streakers</string>
 		<string>Demo4_AccidentalBlobs</string>
 		<string>Demo5_BasicMating</string>
-		<string>Demo6_PickyMating</string>
 		<string>Demo7_JitteryBreeders</string>
 		<string>Demo7_TinyBreeders</string>
-		<string>Demo10_GroupStreakers</string>
 		<string>Demo11_Aggression</string>
 		<string>Restoration</string>
+		<string>Demo6_PickyMating</string>
 		<string>Demo9_FPSCappedBreeders</string>
+		<string>DataInColors</string>
+		<string>Demo10_GroupStreakers</string>
 	</array>
 	<key>Dependencies</key>
 	<array>

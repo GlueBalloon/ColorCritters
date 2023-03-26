@@ -7,7 +7,7 @@ function ColorCritter:init(size, speed, strength, aColor,
     self.speed = speed or math.random(2, 8)
     self.strength = strength or math.random(1, 5)
     self.color = aColor or color(math.random(0,255), math.random(0,255), math.random(0,255))
-    self.color = aColor or hsbToColor(math.random(360),  math.random(23, 100) * 0.01, math.random(23, 100) * 0.01)
+    self.color = aColor or hsbToColor(math.random(360),  math.random(34, 100) * 0.01, math.random(19, 100) * 0.01)
     self.aggression = aggression or math.random(0, 1000) * 0.001
     self.position = position or vec2(math.random(WIDTH), math.random(HEIGHT))
     self.direction = direction or vec2(math.random()-0.5, math.random()-0.5):normalize()
@@ -49,7 +49,7 @@ function ColorCritter:moveBreedDie(backgroundImage, backgroundColor)
     -- initialize variables
     local move, breed, die = self.position, nil, false
     -- pick a random direction and get perimeter point and color information at point
-    local outsidePoint, outsideDirection, pointColor = self:sampleRandomPoint(backgroundImage, backgroundColor)
+    local outsidePoint, outsideDirection, pointColor = self:sampleRandomPoint(backgroundImage)
     -- was something there?
     local foundSomething = pointColor ~= backgroundColor
     -- get where to move
@@ -76,7 +76,7 @@ function ColorCritter:checkForReproduction(pointColor)
     end
 end
 
-function ColorCritter:sampleRandomPoint(backgroundImage, backgroundColor)
+function ColorCritter:sampleRandomPoint(backgroundImage)
     -- Find a point outside the critter
     local outsidePoint = self:pointOutsideSelf()     
     -- find direction to that point
@@ -148,7 +148,7 @@ function ColorCritter:reproduce(mateColor)
     local mutationRate = 0.0025 -- chance of mutation
     local babyColor = self.color
     if mateColor then
-        --babyColor = randomColorBetween(babyColor, mateColor)
+        babyColor = randomColorBetween(babyColor, mateColor)
         --[[
         print("me: ", self.color)
         print("them: ", mateColor)
@@ -169,11 +169,13 @@ function ColorCritter:reproduce(mateColor)
         baby.mateColorVariance = math.max(0.0, math.min(1, self.mateColorVariance + (math.random(-5,5) * 0.001)))
         -- baby.mateColorVariance = 1.0
         printRarely("mutation at "..tostring(self.position).."\n.  mateColorVariance: "..tostring(baby.mateColorVariance))
+        --[[
         local hsbH, hsbS, hsbB = colorToHSB(baby.color)
         local newH = randomHueInRange(hsbH, math.min(1, self.mateColorVariance + (math.random(-5,5) * 0.001)))
         baby.color = hsbToColor(newH, hsbS, hsbB)
         baby.color = randomizeColorWithinVariance(self.color, math.min(1, self.mateColorVariance + (math.random(-5,5) * 0.001)))
         baby.hsbColor = colorToHSB(baby.color)
+        ]]
         baby.speed = math.max(0.1, math.min(40, self.speed + math.random(-math.floor(self.speed/5), math.floor(self.speed/5))))
         baby.aggression = math.max(0, math.min(100, self.aggression + math.random(-3, 3)))
         baby.strength = math.max(0, math.min(100, self.strength + math.random(-6, 6)))
@@ -184,7 +186,7 @@ function ColorCritter:reproduce(mateColor)
     
     -- Place the new critter at a random point on its perimeter
     local angle = math.random() * 2 * math.pi
-    local radius = self.size + baby.size
+    local radius = self.size/2
     local offset = vec2(radius * math.cos(angle), radius * math.sin(angle))
     baby.position = self.position + offset
     

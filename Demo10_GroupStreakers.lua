@@ -56,12 +56,14 @@ function Field:draw()
     
     self.fps=self.fps*.9+.1/DeltaTime
     self:savePopulationHistory(#self.critters)
-    local popAdjustment = self:adjustmentNeeded(#self.critters, self.fps, 20, 2000)
+    local popAdjustment = self:adjustmentNeeded(#self.critters, self.fps, 30, 2000)
     self:removeRandomCritters(popAdjustment)
 
     
     if CurrentTouch.state == BEGAN then
-        isSetUp = false
+        for i, critter in pairs(self.critters) do
+            critter.direction = vec2(math.random()-0.5, math.random()-0.5):normalize()
+        end
     end
     
     

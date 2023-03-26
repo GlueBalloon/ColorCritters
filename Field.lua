@@ -96,9 +96,9 @@ function Field:adjustmentNeeded(population, fps, targetFps, maxPop)
         self.lastGoodFPS = #self.populationHistory
         return 0
     else
-        local adjustment = population - self.populationHistory[self.lastGoodFPS]
+        local adjustment = population - self.populationHistory[self.lastGoodFPS - targetFps]
         if self.lastGoodFPS % 3 == 0 then
-            self.lastGoodFPS = self.lastGoodFPS - 1
+            self.lastGoodFPS = self.lastGoodFPS
         end
         return adjustment
     end
