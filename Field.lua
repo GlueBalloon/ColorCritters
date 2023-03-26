@@ -17,6 +17,7 @@ function Field:init(critters)
     self.targetPopulation = nil
     self.populationHistory = {}
     self.numToCull = 0
+    self.isCustomSetup = false
 end
 
 function Field:resetCritters(numNew)

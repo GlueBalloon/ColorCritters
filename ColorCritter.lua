@@ -3,8 +3,8 @@ ColorCritter = class()
 function ColorCritter:init(size, speed, strength, aColor, 
     aggression, position, direction, timeToFertility, 
     mateColorVariance, mortality)
-    local sizeMin = math.ceil(math.max(WIDTH, HEIGHT) * 0.014641288433382)
-    local sizeMax = math.ceil(math.max(WIDTH, HEIGHT) * 0.06588579795022)
+    local sizeMin = math.ceil(math.max(WIDTH, HEIGHT) * 0.010641288433382)
+    local sizeMax = math.ceil(math.max(WIDTH, HEIGHT) * 0.08988579795022)
     self.size = size or math.random(sizeMin, sizeMax)
     self.speed = speed or math.random(2, 8)
     self.strength = strength or math.random(1, 5)
@@ -150,15 +150,7 @@ function ColorCritter:reproduce(mateColor)
     
     
     local babyColor = self.color
-    if mateColor then
-        babyColor = randomColorBetween(babyColor, mateColor)
-        --[[
-        print("me: ", self.color)
-        print("them: ", mateColor)
-        print("baby: ", babyColor)
-        print("-----")
-        ]]
-    end
+
     -- Create a new critter with the same properties
     local baby = ColorCritter(
         self.size, self.speed, self.strength, 

@@ -2,7 +2,7 @@
 --first ever drawing of critters   
 function Stillness()
     function Field:draw()
-        background(231, 96, 89)
+        background(204, 110, 171)
         for i, critter in ipairs(self.critters) do
             -- Draw critter as an ellipse with size and color
             fill(critter.color.r, critter.color.g, critter.color.b, critter.color.a)
@@ -16,6 +16,7 @@ end
 function Movers()
     function Field:draw()
         self:drawAndSwapBuffer()   
+        self.backgroundColor = color(21, 31, 21)
         background(self.backgroundColor)   
         for _, critter in ipairs(self.critters) do       
             -- Find a point outside the critter
@@ -53,10 +54,6 @@ end
 
 function Streakers()
     --critters that travel in a straight line, painting the screen
-    if not reset then
-        field:resetCritters()
-        reset = true
-    end
     function Field:draw()
         for i, critter in ipairs(self.critters) do
             -- Calculate new position based on direction and speed
@@ -97,7 +94,7 @@ function AccidentalBlobs()
         
         background(self.backgroundColor)
         
-        if #self.critters > 1000 then
+        if #self.critters > 2000 then
             local new = ColorCritter()
             new.mutationRate = 0.95
             self.critters = {new}
@@ -124,7 +121,7 @@ function AccidentalBlobs()
                 critter.direction = outsideDirection
             else
                 -- if not, recalculate position without change of direction 
-                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.1
+                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.17
                 nextPosition = self:wrapIfNeeded(recalculated)
                 --and make baby!
                 local baby = critter:reproduce()

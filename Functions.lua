@@ -162,16 +162,6 @@ function hsbToColor(h, s, b)
     return color(math.floor(r1 * 255), math.floor(g1 * 255), math.floor(b1 * 255))
 end
 
---[[
-function randomizeColorWithinVariance(aColor, variance)
-    local hsb = vec3(colorToHSB(aColor))
-    local varianceScaled = 360 * variance
-    local h = randomHueInRange(hsb.x, varianceScaled)
-    return hsbToColor(h, hsb.y, hsb.z)
-end
-
-]]
-
 -- Helper function to clamp a value within a range
 function clamp(value, min, max)
     return math.min(max, math.max(min, value))
@@ -249,78 +239,15 @@ function testColorBlending(iterations, blendSteps)
     print("Average color:", color(avgRed, avgGreen, avgBlue, 255))
 end 
 
-function randomColorBetween(color1, color2)
-    local hsb1 = vec3(colorToHSB(color1))
-    local hsb2 = vec3(colorToHSB(color2))
-    
-    local h1, h2 = hsb1.x, hsb2.x
-    local s1, s2 = hsb1.y, hsb2.y
-    local b1, b2 = hsb1.z, hsb2.z
-    
-    --set new hue
-    local hueDiff = h2 - h1
-    if math.abs(hueDiff) > 180 then 
-        hueDiff = -sign(hueDiff) * (360 - math.abs(hueDiff))
-    end
-    local hueChange = math.random() * hueDiff
-    local newHue = h1 + hueChange
-    newHue = newHue % 360  -- Wrap the hue value properly
-    
-    --set new saturation
-    local satMin = math.min(s1, s2)
-    local satMax = math.max(s1, s2)
-    local newSat = satMin + math.random() * (satMax - satMin)
-    
-    --set new brightness
-    local briMin = math.min(b1, b2)
-    local briMax = math.max(b1, b2)
-    local newBri = briMin + math.random() * (briMax - briMin)
-    
-    print("oldcolors: ", color1, ", ", color2, "\nnewcolor ", hsbToColor(newHue, newSat, newBri))
-    return hsbToColor(newHue, newSat, newBri)
-end
-
 function weightedRandom(min, max, weight)
     local randomVal = math.random() * weight + math.random() * (1 - weight)
     return min + (max - min) * randomVal
-end
-
-function randomColorBetween(color1, color2)
-    local h1, s1, b1 = colorToHSB(color1)
-    local h2, s2, b2 = colorToHSB(color2)
-    
-    -- set new hue
-    local hueDiff = math.abs(h2 - h1)
-    if hueDiff > 180 then
-        hueDiff = 360 - hueDiff
-    end
-    local hueDirection = sign(((h2 - h1) + 360) % 360 - 180)  -- calculate the direction to move along the hue circle
-    local hueChangeProportion = math.random()
-    local newHue = h1 + hueDirection * hueChangeProportion * hueDiff
-    newHue = newHue % 360  -- Wrap the hue value properly
-    
-    
-    
-    -- set new saturation
-    local satMin = math.max(0, math.min(s1, s2) - 0.015)
-    local satMax = 1.0
-    local satChangeProportion = weightedRandom(0, 1, 0.75)
-    local newSat = satMin + satChangeProportion * (satMax - satMin)
-    
-    -- set new brightness
-    local briMin = math.max(0, math.min(b1, b2) - 0.015)
-    local briMax = 1.0
-    local briChangeProportion = weightedRandom(0, 1, 0.75)
-    local newBri = briMin + briChangeProportion * (briMax - briMin)
-    
-    return hsbToColor(newHue, newSat, newBri)
 end
 
 function lerp(a, b, t)
     return a + (b - a) * t
 end
 
---[[
 function randomColorBetween(color1, color2)
     local hsb1 = vec3(colorToHSB(color1))
     local hsb2 = vec3(colorToHSB(color2))
@@ -348,8 +275,6 @@ function randomColorBetween(color1, color2)
     
     return hsbToColor(newHue, newSat, newBri)
 end
-]]
-
 
 function sign(x)
     if x < 0 then

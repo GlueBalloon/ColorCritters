@@ -34,6 +34,9 @@ end
 
 function DemoControl:updateDemoAndReset(newDemoIndex)
     -- Update the selected demo and call resetFunction
+    field = Field()
+    output.clear()
+    parameter.clear()
     self.lastSliderValue = newDemoIndex
     self.selectedDemo = newDemoIndex
     self.demoChangedTime = ElapsedTime
@@ -80,7 +83,7 @@ function DemoControl:drawTitle()
     local elapsedTime = ElapsedTime - self.demoChangedTime
     local fadeOutPhase = math.min(self.titleFadeSeconds * 0.5, 0.5)
     
-    if elapsedTime < self.titleFadeSeconds then
+    if elapsedTime <= self.titleFadeSeconds then
         local alpha
         if elapsedTime < self.titleFadeSeconds - fadeOutPhase then
             alpha = 255
@@ -90,9 +93,7 @@ function DemoControl:drawTitle()
         
         local title = self.lastSliderValue.." of "..tostring(#self.demoTitles)..": "..tostring(self.demoTitles[self.lastSliderValue] or "")
         local shadowOffset = vec2(2, -2) -- Offset for the shadow
-        
-        print(title)
-        
+
         -- Draw the shadow
         fill(0, 0, 0, alpha)
         fontSize(48)

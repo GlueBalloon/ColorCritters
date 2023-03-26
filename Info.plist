@@ -4,24 +4,19 @@
 <dict>
 	<key>Buffer Order</key>
 	<array>
-		<string>Main_FromFirstTry</string>
-		<string>Main_WithTests</string>
+		<string>Main_OfFirstTry</string>
+		<string>Main_ForTests</string>
 		<string>Main</string>
 		<string>DemoControl</string>
 		<string>ColorCritter</string>
 		<string>Field</string>
 		<string>Functions</string>
 		<string>EarlyDemos</string>
-		<string>ComplexDemos</string>
-		<string>Demo5_BasicMating</string>
-		<string>Demo7_JitteryBreeders</string>
-		<string>Demo7_TinyBreeders</string>
+		<string>BreedingDemos</string>
+		<string>Demo10_GroupStreakers</string>
 		<string>Demo11_Aggression</string>
 		<string>Restoration</string>
-		<string>Demo6_PickyMating</string>
-		<string>Demo9_FPSCappedBreeders</string>
 		<string>DataInColors</string>
-		<string>Demo10_GroupStreakers</string>
 	</array>
 	<key>Dependencies</key>
 	<array>
