@@ -13,6 +13,7 @@ function setup()
     demoControl:addDemo(PickyBreeders, "Picky Breeders")
     demoControl:addDemo(TinyBreeders, "Tiny Breeders")
     demoControl:addDemo(PopulationTiedToFPS, "Population Tied To FPS")
+    demoControl:addDemo(GroupStreakers, "Group Streakers")
 end
 
 function draw()
