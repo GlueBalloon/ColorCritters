@@ -19,8 +19,6 @@
 		<string>DataInColors</string>
 	</array>
 	<key>Dependencies</key>
-	<array>
-		<string>Documents:DraggableSafariView</string>
-	</array>
+	<array/>
 </dict>
 </plist>

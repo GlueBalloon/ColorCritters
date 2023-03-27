@@ -2,6 +2,12 @@
 DemoControl = class()
 
 function DemoControl:init()
+    pushStyle()
+    self.fontSize = math.max(WIDTH, HEIGHT) * 0.0295
+    fontSize(self.fontSize)
+    _, self.textHeight = textSize("aAbBhHjJkKpPtTyY@\"'!?()//@{}%")
+    popStyle()
+    self.sliderHeight = 0
     self.demoChangedTime = 0
     self.selectedDemo = 1
     self.demoDrawFunctions = {}
@@ -61,11 +67,15 @@ function DemoControl:makeiOSControl()
     local UIScreen_mainScreen = UIScreen:mainScreen()
     local UIScreen_mainScreen_bounds = objc.viewer.view.bounds
     local sliderWidth = math.floor(WIDTH * 0.45)
-    local sliderHeight = 50
+    self.sliderHeight = math.floor(self.textHeight * 0.55)
+    local heighfOffset = self.sliderHeight
+    if WIDTH == math.min(WIDTH, HEIGHT) then
+        heighfOffset = heighfOffset + layout.safeArea.top
+    end
     
     self.iosSlider = objc.UISlider()
-    self.iosSlider.frame = objc.rect(math.floor(WIDTH / 2 - sliderWidth / 2), 100,
-    sliderWidth, sliderHeight)
+    self.iosSlider.frame = objc.rect(math.floor(WIDTH / 2 - sliderWidth / 2), 
+    heighfOffset, sliderWidth, self.sliderHeight)
       
     self.iosSlider:setMinimumValue_(1)
     self.iosSlider:setMaximumValue_(#self.demoDrawFunctions)
@@ -93,18 +103,21 @@ function DemoControl:drawTitle()
         
         local title = self.lastSliderValue.." of "..tostring(#self.demoTitles)..": "..tostring(self.demoTitles[self.lastSliderValue] or "")
         local shadowOffset = vec2(2, -2) -- Offset for the shadow
-
+        
+        fontSize(self.fontSize)
+        local heighfOffset = (self.textHeight + self.sliderHeight) * 1.35
+        if WIDTH == math.min(WIDTH, HEIGHT) then
+            heighfOffset = heighfOffset + layout.safeArea.top
+        end
         -- Draw the shadow
         fill(0, 0, 0, alpha)
-        fontSize(48)
         textMode(CENTER)
-        text(title, (WIDTH / 2) + shadowOffset.x, (HEIGHT - 60) + shadowOffset.y)
+        text(title, (WIDTH / 2) + shadowOffset.x, (HEIGHT - heighfOffset) + shadowOffset.y)
         
         -- Draw the title
         fill(255, 255, 255, alpha)
-        fontSize(48)
         textMode(CENTER)
-        text(title, WIDTH / 2, HEIGHT - 60)
+        text(title, WIDTH / 2, HEIGHT - heighfOffset)
     end
 end
 
