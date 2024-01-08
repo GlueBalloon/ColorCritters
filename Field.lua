@@ -23,25 +23,39 @@ function FieldDrawer:drawAndSwapBuffer(field)
     setContext(self.buffer)
 end
 
--- Ticker class
-Ticker = class()
+-- PopTracker class
+PopTracker = class()
 
-function Ticker:init()
-    self.rate = 60
-    self.rateHistory = {}
+function PopTracker:init(targetPopulation)
+    self.population = 0
+    self.targetPopulation = targetPopulation or 0
+    self.lastGoodTickRate = 0
+    self.history = {}
 end
 
-function Ticker:updateTickRate(newTickRate)
-    self.rate = newTickRate
-    table.insert(self.rateHistory, newTickRate)
+function PopTracker:update(newPopulation)
+    self.population = newPopulation
+    table.insert(self.history, newPopulation)
 end
 
-function Ticker:getAverageTickRate()
-    local sum = 0
-    for i, v in ipairs(self.rateHistory) do
-        sum = sum + v
+function PopTracker:amountOverTarget(population, tickRate, targetRate, maxPop)
+    maxPop = maxPop or self.targetPopulation
+    if maxPop and population > maxPop then
+        return population - maxPop
     end
-    return sum / #self.rateHistory
+    if tickRate > targetRate then
+        self.lastGoodTickRate = #self.history
+        return 0
+    elseif self.history[self.lastGoodTickRate] then
+        local overage = 
+            population - self.history[self.lastGoodTickRate] - targetRate
+        if self.lastGoodTickRate % 3 == 0 then
+            self.lastGoodTickRate = self.lastGoodTickRate
+        end
+        return overage
+    else
+        return 0
+    end 
 end
 
 -- Field class
@@ -53,12 +67,12 @@ function Field:init(critters, bgColor)
     self.babies = {}
     self.ageTable = {}
     self.oldest = {}
-    self.targetPopulation = nil
-    self.populationHistory = {}
+    self.popHistory = {}
     self.numToCull = 0
     self.isCustomSetup = false
     self.drawer = FieldDrawer(self)
-    self.ticker = Ticker()
+    self.tickRate = 0
+    self.popTracker = PopTracker()
 end
 
 function Field:resetCritters(numNew)
@@ -75,7 +89,8 @@ end
 
 function Field:wrapIfNeeded(point)
     -- Wrap around the edges if the new position is out of bounds
-    if point.x <= WIDTH and point.x > 0 and point.y <= HEIGHT and point.y > 0 then
+    if point.x <= WIDTH and point.x > 0 and 
+        point.y <= HEIGHT and point.y > 0 then
         return point
     end
     point.x = point.x % WIDTH
@@ -90,51 +105,13 @@ function Field:drawAndSwapBuffer()
     self.drawer:drawAndSwapBuffer(self)
 end
 
-function Field:getMedianTickRatePopulationAndRatio()
-    local medianTable = self:findMedianTickRateTable()
-    if not medianTable then return end
-    local medianTickRate = medianTable.ticker.rate
-    local medianPopulation = medianTable.population
-    local ratio = medianPopulation / medianTickRate
-    return medianTickRate, medianPopulation, ratio
+function Field:updatePopHistory(population)
+    self.popHistory[#self.popHistory+1] = population
 end
 
-function Field:findMedianTickRateTable()
-    local tickRateValues = {}
-    for _, pair in ipairs(self.ticker.rateHistory) do
-        table.insert(tickRateValues, pair)
-    end
-    table.sort(tickRateValues, function(a, b) return a.ticker.rate < b.ticker.rate end)
-    local medianIndex = math.floor(#tickRateValues/2)
-    return tickRateValues[medianIndex]
-end
-
-function Field:savePopulationHistory(population)
-    table.insert(self.populationHistory, population)
-    if #self.populationHistory > 20000 then
-        table.remove(self.populationHistory, 1)
-    end
-end
-
-function Field:savePopulationHistory(population)
-    self.populationHistory[#self.populationHistory+1] = population
-end
-
-function Field:adjustmentNeeded(population, tickRate, targetTickRate, maxPop)
-    if maxPop and #self.critters > maxPop then
-        return #self.critters - maxPop
-    end
-    if tickRate > targetTickRate then
-        self.lastGoodTickRate = #self.populationHistory
-        return 0
-    else
-        print(targetTickRate, population , self.populationHistory[self.lastGoodTickRate] , targetTickRate)
-        local adjustment = population - self.populationHistory[self.lastGoodTickRate] - targetTickRate
-        if self.lastGoodTickRate % 3 == 0 then
-            self.lastGoodTickRate = self.lastGoodTickRate
-        end
-        return adjustment
-    end
+function Field:amountOverTargetPop(population, tickRate, targetRate, maxPop)
+    local tracker = self.popTracker
+    return tracker:amountOverTarget(population, tickRate, targetRate, maxPop)
 end
 
 function Field:removeRandomCritters(adjustment)
@@ -142,40 +119,5 @@ function Field:removeRandomCritters(adjustment)
         local index = math.random(#self.critters)
         local value = table.remove(self.critters, index)
         adjustment = adjustment - 1
-    end
-end
-
-function Field:getPopulationForTickRateTarget(medianTickRate, medianPopulation, targetTickRate)
-    local ratio = medianPopulation / medianTickRate
-    local targetPopulation = math.ceil(targetTickRate * ratio)
-    return targetPopulation
-end
-
-function Field:storeTickRateHistory(tickRate, population)
-    local pair = {tickRate=tickRate, population=population}
-    if #self.ticker.rateHistory < 100 then
-        table.insert(self.ticker.rateHistory, pair)
-    else
-        table.insert(self.ticker.rateHistory, 1, pair)
-        self.ticker.rateHistory[101] = nil
-    end
-end
-
-function Field:collectOldest(critter, aTotal)
-    local total = aTotal or 100
-    if #self.oldest < total then
-        table.insert(self.oldest, critter)
-    else
-        local minAge = self.oldest[1].age
-        local minIndex = 1
-        for i, oldCritter in ipairs(self.oldest) do
-            if oldCritter.age < minAge then
-                minAge = oldCritter.age
-                minIndex = i
-            end
-        end
-        if critter.age > minAge then
-            self.oldest[minIndex] = critter
-        end
     end
 end
