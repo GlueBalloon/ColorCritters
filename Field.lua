@@ -23,22 +23,42 @@ function FieldDrawer:drawAndSwapBuffer(field)
     setContext(self.buffer)
 end
 
+-- Ticker class
+Ticker = class()
+
+function Ticker:init()
+    self.rate = 60
+    self.rateHistory = {}
+end
+
+function Ticker:updateTickRate(newTickRate)
+    self.rate = newTickRate
+    table.insert(self.rateHistory, newTickRate)
+end
+
+function Ticker:getAverageTickRate()
+    local sum = 0
+    for i, v in ipairs(self.rateHistory) do
+        sum = sum + v
+    end
+    return sum / #self.rateHistory
+end
+
 -- Field class
 Field = class()
 
 function Field:init(critters, bgColor)
     self.backgroundColor = bgColor or color(24, 27, 40)
     self.critters = critters or {}
-    self.tickRate = 60
     self.babies = {}
     self.ageTable = {}
     self.oldest = {}
-    self.tickRateHistory = {}
     self.targetPopulation = nil
     self.populationHistory = {}
     self.numToCull = 0
     self.isCustomSetup = false
     self.drawer = FieldDrawer(self)
+    self.ticker = Ticker()
 end
 
 function Field:resetCritters(numNew)
@@ -73,7 +93,7 @@ end
 function Field:getMedianTickRatePopulationAndRatio()
     local medianTable = self:findMedianTickRateTable()
     if not medianTable then return end
-    local medianTickRate = medianTable.tickRate
+    local medianTickRate = medianTable.ticker.rate
     local medianPopulation = medianTable.population
     local ratio = medianPopulation / medianTickRate
     return medianTickRate, medianPopulation, ratio
@@ -81,10 +101,10 @@ end
 
 function Field:findMedianTickRateTable()
     local tickRateValues = {}
-    for _, pair in ipairs(self.tickRateHistory) do
+    for _, pair in ipairs(self.ticker.rateHistory) do
         table.insert(tickRateValues, pair)
     end
-    table.sort(tickRateValues, function(a, b) return a.tickRate < b.tickRate end)
+    table.sort(tickRateValues, function(a, b) return a.ticker.rate < b.ticker.rate end)
     local medianIndex = math.floor(#tickRateValues/2)
     return tickRateValues[medianIndex]
 end
@@ -133,11 +153,11 @@ end
 
 function Field:storeTickRateHistory(tickRate, population)
     local pair = {tickRate=tickRate, population=population}
-    if #self.tickRateHistory < 100 then
-        table.insert(self.tickRateHistory, pair)
+    if #self.ticker.rateHistory < 100 then
+        table.insert(self.ticker.rateHistory, pair)
     else
-        table.insert(self.tickRateHistory, 1, pair)
-        self.tickRateHistory[101] = nil
+        table.insert(self.ticker.rateHistory, 1, pair)
+        self.ticker.rateHistory[101] = nil
     end
 end
 
