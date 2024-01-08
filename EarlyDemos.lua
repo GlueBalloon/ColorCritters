@@ -1,6 +1,9 @@
 
 --first ever drawing of critters   
 function Stillness()
+    if demoControl.selectedDemo ~= 1 then
+        return
+    end
     function Field:draw()
         background(204, 110, 171)
         for i, critter in ipairs(self.critters) do
@@ -30,7 +33,7 @@ function Movers()
             -- Make its x and y into non-zero integers inside bounds and get color at that point
             local bufferX, bufferY = math.floor(nextPosition.x), math.floor(nextPosition.y)
             bufferX, bufferY = math.min(WIDTH, math.max(1, bufferX)), math.min(HEIGHT, math.max(1, bufferY))
-            local colorAtPoint = color(self.buffer:get(bufferX, bufferY))
+            local colorAtPoint = color(self.drawer.buffer:get(bufferX, bufferY))
             -- check if that color is background color
             if colorAtPoint == self.backgroundColor then
                 --if so, store the new direction
@@ -114,7 +117,7 @@ function AccidentalBlobs()
             -- Make its x and y into non-zero integers inside bounds and get color at that point
             local bufferX, bufferY = math.floor(nextPosition.x), math.floor(nextPosition.y)
             bufferX, bufferY = math.min(WIDTH, math.max(1, bufferX)), math.min(HEIGHT, math.max(1, bufferY))
-            local colorAtPoint = color(self.lastBuffer:get(bufferX, bufferY))
+            local colorAtPoint = color(self.drawer.lastBuffer:get(bufferX, bufferY))
             -- check if that color is background color
             if colorAtPoint == self.backgroundColor then
                 --if so, store the new direction

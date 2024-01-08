@@ -1,3 +1,14 @@
+
+
+
+--[[ ****
+
+Actual Main tab.
+
+-- **** ]]
+
+
+
 function setup()
     field = Field()
     demoControl = DemoControl()
@@ -17,14 +28,23 @@ function setup()
 end
 
 function draw()
-    --make the chooser default to the last demo
+
     if demoControl.iosSlider and not sliderSet then
+        --make the chooser default to the last demo
+        print("not")
         local last = #demoControl.demoDrawFunctions
         demoControl.iosSlider:setValue_(last)
         demoControl:updateDemoAndReset(last)
+        demoControl:draw()
         sliderSet = true
+        background(0)
+    elseif not demoControl.iosSlider then
+        --make the background cleared at least once
+        demoControl:draw()
+        background(0)
+    else  
+        demoControl:draw()
     end
-    demoControl:draw()
 end
 
 function touched(touch)

@@ -1,3 +1,28 @@
+-- FieldDrawer class
+FieldDrawer = class()
+
+function FieldDrawer:init(field)
+    self.field = field
+    self.buffer = image(WIDTH, HEIGHT)
+    self.lastBuffer = self.buffer
+end
+
+function FieldDrawer:drawAndSwapBuffer(field)
+    local field = field or field.field
+    collectgarbage()
+    if not self.buffer then
+        self.buffer = image(WIDTH, HEIGHT)
+        setContext(self.buffer)
+        background(field.backgroundColor)
+        self.lastBuffer = self.buffer
+    end
+    setContext()
+    self.lastBuffer = self.buffer
+    sprite(self.buffer, WIDTH/2, HEIGHT/2)
+    self.buffer = image(WIDTH, HEIGHT)
+    setContext(self.buffer)
+end
+
 -- Field class
 Field = class()
 
@@ -7,8 +32,6 @@ function Field:init(critters)
     if #self.critters == 0 then
         self:resetCritters()
     end
-    self.buffer = image(WIDTH, HEIGHT)
-    self.lastBuffer = self.buffer
     self.fps = 60
     self.babies = {}
     self.ageTable = {}
@@ -18,6 +41,7 @@ function Field:init(critters)
     self.populationHistory = {}
     self.numToCull = 0
     self.isCustomSetup = false
+    self.drawer = FieldDrawer(self)
 end
 
 function Field:resetCritters(numNew)
@@ -45,18 +69,8 @@ function Field:wrapIfNeeded(point)
 end
 
 function Field:drawAndSwapBuffer()
-    collectgarbage()
-    if not self.buffer then
-        self.buffer = image(WIDTH, HEIGHT)
-        setContext(self.buffer)
-        background(self.backgroundColor)
-        self.lastBuffer = self.buffer
-    end
-    setContext()
-    self.lastBuffer = self.buffer
-    sprite(self.buffer, WIDTH/2, HEIGHT/2)
-    self.buffer = image(WIDTH, HEIGHT)
-    setContext(self.buffer)
+    --ridiculous un-refactoring of refactoring (for now):
+    self.drawer:drawAndSwapBuffer(self)
 end
 
 function Field:getMedianFpsPopulationAndRatio()
@@ -97,7 +111,8 @@ function Field:adjustmentNeeded(population, fps, targetFps, maxPop)
         self.lastGoodFPS = #self.populationHistory
         return 0
     else
-        local adjustment = population - self.populationHistory[self.lastGoodFPS - targetFps]
+        print(targetFps, population , self.populationHistory[self.lastGoodFPS] , targetFps)
+        local adjustment = population - self.populationHistory[self.lastGoodFPS] - targetFps
         if self.lastGoodFPS % 3 == 0 then
             self.lastGoodFPS = self.lastGoodFPS
         end

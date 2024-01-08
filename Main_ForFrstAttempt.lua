@@ -1,5 +1,13 @@
 
-    
+
+
+--[[ ****
+
+Not in use. An early first try.
+
+-- **** ]]
+
+
 
 -- define constants
 local SCREEN_WIDTH = WIDTH

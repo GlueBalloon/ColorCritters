@@ -4,18 +4,16 @@
 <dict>
 	<key>Buffer Order</key>
 	<array>
-		<string>Main_OfFirstTry</string>
+		<string>Main_ForFrstAttempt</string>
 		<string>Main_ForTests</string>
 		<string>Main</string>
-		<string>DemoControl</string>
+		<string>Functions</string>
 		<string>ColorCritter</string>
 		<string>Field</string>
-		<string>Functions</string>
+		<string>DemoControl</string>
 		<string>EarlyDemos</string>
 		<string>BreedingDemos</string>
-		<string>Demo11_Aggression</string>
-		<string>Restoration</string>
-		<string>DataInColors</string>
+		<string>InProgress</string>
 	</array>
 	<key>Dependencies</key>
 	<array/>

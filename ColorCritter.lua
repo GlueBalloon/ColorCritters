@@ -3,13 +3,19 @@ ColorCritter = class()
 function ColorCritter:init(size, speed, strength, aColor, 
     aggression, position, direction, timeToFertility, 
     mateColorVariance, mortality)
+    self.size = size
+    self.speed = speed
+    self.color = aColor
+    self:addPropertiesToBeRefactored(strength, aggression, position, direction, timeToFertility, mateColorVariance, mortality)
+end
+
+function ColorCritter:addPropertiesToBeRefactored(strength, aggression, position, direction, timeToFertility, mateColorVariance, mortality)
     local sizeMin = math.ceil(math.max(WIDTH, HEIGHT) * 0.010641288433382)
     local sizeMax = math.ceil(math.max(WIDTH, HEIGHT) * 0.08988579795022)
-    self.size = size or math.random(sizeMin, sizeMax)
-    self.speed = speed or math.random(2, 8)
+    self.size = self.size or math.random(sizeMin, sizeMax)
+    self.speed = self.speed or math.random(2, 8)
     self.strength = strength or math.random(1, 5)
-    self.color = aColor or color(math.random(0,255), math.random(0,255), math.random(0,255))
-    self.color = aColor or hsbToColor(math.random(360),  math.random(34, 100) * 0.01, math.random(19, 100) * 0.01)
+    self.color = self.color or color(math.random(0,255), math.random(0,255), math.random(0,255))
     self.aggression = aggression or math.random(0, 1000) * 0.001
     self.position = position or vec2(math.random(WIDTH), math.random(HEIGHT))
     self.direction = direction or vec2(math.random()-0.5, math.random()-0.5):normalize()

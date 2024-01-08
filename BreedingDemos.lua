@@ -20,17 +20,17 @@ function BasicMating()
             function buffSwap(field)
                 setContext()
                 sprite(field.buffer, WIDTH/2, HEIGHT/2, WIDTH, HEIGHT)
-                field.lastBuffer = field.buffer
+                field.drawer.lastBuffer = field.drawer.buffer
             end
             --toggle these on and off to activate features
             doTouchTest = false
             showLastBufferThumbnail = false
         end
         if doTouchTest then
-            if not self.buffer then
-                self.buffer = image(WIDTH,HEIGHT)
+            if not self.drawer.buffer then
+                self.drawer.buffer = image(WIDTH,HEIGHT)
             end
-            setContext(self.buffer)
+            setContext(self.drawer.buffer)
             -- Draw left box in left color
             rectMode(CORNER)
             fill(236, 67, 155)
@@ -46,12 +46,12 @@ function BasicMating()
             
             buffSwap(self)
             if CurrentTouch.state == BEGAN then
-                print(color(field.lastBuffer:get(math.floor(CurrentTouch.x), math.floor(CurrentTouch.y))))
+                print(color(field.drawer.lastBuffer:get(math.floor(CurrentTouch.x), math.floor(CurrentTouch.y))))
             end
             return
         end
         
-        setContext(self.buffer)
+        setContext(self.drawer.buffer)
         background(self.backgroundColor)
         self.fps=self.fps*.9+.1/DeltaTime
         if self.fps < 30 then
@@ -60,7 +60,7 @@ function BasicMating()
         local babies = {}
         for _, critter in ipairs(self.critters) do
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, store it
             if babyMaybe ~= nil then
                 table.insert(babies, babyMaybe)
@@ -75,7 +75,7 @@ function BasicMating()
             spriteMode(CORNER)
             fill(30, 26, 46)
             rect(WIDTH - (WIDTH/4) - 15, 50, (WIDTH/4) + 10, (HEIGHT/4) + 10)
-            sprite(self.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
+            sprite(self.drawer.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
             popStyle()
         end
 
@@ -109,7 +109,7 @@ function JitteryBreeders()
             respawn()
         end
         
-        setContext(self.buffer)
+        setContext(self.drawer.buffer)
         background(self.backgroundColor)
         
         local babies = {}
@@ -130,7 +130,7 @@ function JitteryBreeders()
             local outsidePointInBounds = self:wrapIfNeeded(outsidePoint)
             local bufferX, bufferY = math.floor(outsidePointInBounds.x), math.floor(outsidePointInBounds.y)
             bufferX, bufferY = math.min(WIDTH, math.max(1, bufferX)), math.min(HEIGHT, math.max(1, bufferY))
-            local colorAtPoint = color(self.lastBuffer:get(100,100))
+            local colorAtPoint = color(self.drawer.lastBuffer:get(100,100))
             -- check if that color is background color
             if colorAtPoint == self.backgroundColor or
             colorAtPoint == critter.color then
@@ -172,7 +172,7 @@ function JitteryBreeders()
             spriteMode(CORNER)
             fill(30, 26, 46)
             rect(WIDTH - (WIDTH/4) - 15, 50, (WIDTH/4) + 10, (HEIGHT/4) + 10)
-            sprite(self.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
+            sprite(self.drawer.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
             popStyle()
         end
         if CurrentTouch.state == BEGAN then
@@ -239,7 +239,7 @@ function PickyBreeders()
         local deaths = {}
         generations = generations + 1
         -- set buffer
-        setContext(self.buffer)
+        setContext(self.drawer.buffer)
         background(self.backgroundColor)
         -- go through the critters
         for i, critter in ipairs(self.critters) do  
@@ -252,7 +252,7 @@ function PickyBreeders()
             end 
             
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
@@ -278,8 +278,8 @@ function PickyBreeders()
             spriteMode(CORNER)
             fill(30, 26, 46)
             rect(WIDTH - (WIDTH/4) - 15, 50, (WIDTH/4) + 10, (HEIGHT/4) + 10)
-            --sprite(self.buffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
-            sprite(self.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
+            --sprite(self.drawer.buffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
+            sprite(self.drawer.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
             popStyle()
         end
         
@@ -339,7 +339,7 @@ function TinyBreeders()
         end
         
         self:drawAndSwapBuffer()
-        setContext(self.buffer)
+        setContext(self.drawer.buffer)
         background(self.backgroundColor)
         
         local deaths = {}
@@ -347,7 +347,7 @@ function TinyBreeders()
         for _, critter in ipairs(self.critters) do
             
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
@@ -374,7 +374,7 @@ function TinyBreeders()
             spriteMode(CORNER)
             fill(30, 26, 46)
             rect(WIDTH - (WIDTH/4) - 15, 50, (WIDTH/4) + 10, (HEIGHT/4) + 10)
-            sprite(self.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
+            sprite(self.drawer.lastBuffer, WIDTH - (WIDTH/4) - 10, 55, WIDTH/4, HEIGHT/4)
             popStyle()
         end
         if CurrentTouch.state == BEGAN then
@@ -398,24 +398,15 @@ end
 --when fps drops too low, oldest critters get removed
 function PopulationTiedToFPS()
     function Field:draw()
-        
-        --basic draw cycle prep
-        pushStyle()
-        noStroke()
-        
-        self:drawAndSwapBuffer()   
-        
-        --draw to buffer
-        setContext(self.buffer)
-        
+
         --functions for spawning custom critters
         function newCritter(pos)
             local new = ColorCritter()
             new.mateColorVariance = 0.01
-            new.size = math.random(2, math.ceil(math.max(WIDTH, HEIGHT) * 0.018))
+            new.size = math.random(2, math.ceil(math.max(WIDTH, HEIGHT) * 0.005))
             new.speed = math.random(8, 20)
             new.timeToFertility = math.random(80, 90)
-            new.mortality = new.timeToFertility * math.random(11, 50) * 0.1
+            new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
             new.position = pos or new.position
             table.insert(field.critters, new)
         end
@@ -428,14 +419,24 @@ function PopulationTiedToFPS()
         end
         if not self.isCustomSetup then
             self.isCustomSetup = true
-            self.backgroundColor = color(25, 34, 43)
+            self.backgroundColor = color(16, 21, 16)
             respawn()
             parameter.clear()
             parameter.watch("fps")
             parameter.watch("pop")
             parameter.watch("cull")
             parameter.watch("numDeaths")
+            parameter.watch("randosAdded")
         end
+        
+        --basic draw cycle prep
+        pushStyle()
+        noStroke()
+        
+        self:drawAndSwapBuffer()   
+        
+        --draw to buffer
+        setContext(self.drawer.buffer)
         
         --clear screen
         background(self.backgroundColor)   
@@ -444,6 +445,8 @@ function PopulationTiedToFPS()
         self.deaths = {}
         self.babies = {}
         self.ageTable = {}
+        self.randoPercent = 0.08 --not in self by default
+        self.fpsTarget = 15 --not in self by default
         
         --cycle through critters
         for i, critter in ipairs(self.critters) do
@@ -453,7 +456,7 @@ function PopulationTiedToFPS()
                 goto nextCritter
             end
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, store it
             if babyMaybe ~= nil then
                 table.insert(self.babies, babyMaybe)
@@ -473,7 +476,10 @@ function PopulationTiedToFPS()
         --check fps to see if culling is needed
         self.fps=self.fps*.9+.1/DeltaTime
         self:savePopulationHistory(#self.critters)
-        self.numToCull = self:adjustmentNeeded(#self.critters, self.fps, 15, 4000)
+        local fpsTargetTweaked = self.fpsTarget * 1.3
+        self.numToCull = self:adjustmentNeeded(#self.critters, self.fps, fpsTargetTweaked, 10000)
+        --add a little extra to numToCull if not zero, for random replacements
+        self.numToCull = math.ceil(self.numToCull * (1 + self.randoPercent))
         fps = self.fps
         pop = #self.critters
         cull = self.numToCull
@@ -481,10 +487,6 @@ function PopulationTiedToFPS()
         ageTable = self.ageTable
         -- if culling is needed, use ageTable to add to kill list
         if self.numToCull > 0 then
-            -- self:removeRandomCritters(self.numToCull)
-            --       print("culled ", self.numToCull)
-            --     self.critters = {}
-            --   goto killKludge
             
             local culledCount = 0
             
@@ -509,7 +511,7 @@ function PopulationTiedToFPS()
             end       
             
         end
-        ::killKludge::
+
         -- sort death table from lowest to highest
         deaths = self.deaths
         numDeaths = #self.deaths
@@ -523,22 +525,33 @@ function PopulationTiedToFPS()
         for _, value in ipairs(self.deaths) do
             if value ~= prevValue then
                 table.insert(uniqueIndexes, value)
-                --  print("added to uniqueIndexes ", value)
             end
             prevValue = value
         end
         
         --clear out the dead by index and add in the newborn
-        --print("before cull ", #self.critters, ", deaths ", #self.deaths)
         for i=#uniqueIndexes, 1, -1 do
-            -- print("removing ", uniqueIndexes[i])
-            table.remove(self.critters, uniqueIndexes[i])
+            --allow for randos to add
+            if i > self.numToCull * self.randoPercent then
+                table.remove(self.critters, uniqueIndexes[i])
+            end
         end   
-        -- print("after cull ", #self.critters)
+
         for _, baby in ipairs(self.babies) do
             table.insert(self.critters, baby)
         end
         
+        --if some were culled, add in some new random creatures
+        --(prevents entire domination by one color)
+        if #uniqueIndexes > 0 then
+            local randosToAdd = math.floor(self.numToCull * self.randoPercent)
+            self:removeRandomCritters(randosToAdd)
+            randosAdded = 0
+            for i=1, randosToAdd do
+                newCritter()
+                randosAdded = randosAdded + 1
+            end
+        end
         
         popStyle()
         
@@ -546,6 +559,7 @@ function PopulationTiedToFPS()
         if CurrentTouch.state == BEGAN then
             isSetUp = false
         end
+        
     end
     field:draw()
 end
@@ -553,13 +567,14 @@ end
 
 --just like the streakers demo except the critters multiply
 function GroupStreakers()
+
     function Field:draw()
         
         function newCritter(pos)
             local new = ColorCritter()
             new.mateColorVariance = 0.3
             new.size = math.random(10, 42)
-            new.speed = math.random(8, 20)
+            new.speed = math.random(1, 9)
             new.timeToFertility = math.random(20, 80)
             new.mortality = new.timeToFertility * math.random(11, 50) * 0.1
             new.position = pos or new.position
@@ -575,20 +590,28 @@ function GroupStreakers()
             self.isCustomSetup = true
             self.backgroundColor = color(43, 26, 25)
             respawn()
+            backgroundBlankImage = image(WIDTH,HEIGHT)
+            backgroundClearCounter = 0
+        end
+        if #self.critters > 2000 then
+            respawn()
         end
         
-        pushStyle()
-        self:drawAndSwapBuffer()
-
-        noStroke()
-        setContext(self.buffer)
+        -- apparently without this kludge I can't truly clear the screen after other demos
+        if backgroundClearCounter and backgroundClearCounter < 4 then
+            print("noo")
+            background(self.backgroundColor)
+            self:drawAndSwapBuffer()
+            sprite(backgroundBlankImage)
+            backgroundClearCounter = backgroundClearCounter + 1
+        end
         
         local deaths = {}
         self.babies = {}
         self.oldest = {}
         for _, critter in ipairs(self.critters) do
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
