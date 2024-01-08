@@ -8,7 +8,7 @@ function FieldDrawer:init(field)
 end
 
 function FieldDrawer:drawAndSwapBuffer(field)
-    local field = field or field.field
+    local field = field or self.field
     collectgarbage()
     if not self.buffer then
         self.buffer = image(WIDTH, HEIGHT)
@@ -26,17 +26,14 @@ end
 -- Field class
 Field = class()
 
-function Field:init(critters)
-    self.backgroundColor = color(24, 27, 40)
+function Field:init(critters, bgColor)
+    self.backgroundColor = bgColor or color(24, 27, 40)
     self.critters = critters or {}
-    if #self.critters == 0 then
-        self:resetCritters()
-    end
-    self.fps = 60
+    self.tickRate = 60
     self.babies = {}
     self.ageTable = {}
     self.oldest = {}
-    self.fpsHistory = {}
+    self.tickRateHistory = {}
     self.targetPopulation = nil
     self.populationHistory = {}
     self.numToCull = 0
@@ -73,23 +70,23 @@ function Field:drawAndSwapBuffer()
     self.drawer:drawAndSwapBuffer(self)
 end
 
-function Field:getMedianFpsPopulationAndRatio()
-    local medianTable = self:findMedianFpsTable()
+function Field:getMedianTickRatePopulationAndRatio()
+    local medianTable = self:findMedianTickRateTable()
     if not medianTable then return end
-    local medianFps = medianTable.fps
+    local medianTickRate = medianTable.tickRate
     local medianPopulation = medianTable.population
-    local ratio = medianPopulation / medianFps
-    return medianFps, medianPopulation, ratio
+    local ratio = medianPopulation / medianTickRate
+    return medianTickRate, medianPopulation, ratio
 end
 
-function Field:findMedianFpsTable()
-    local fpsValues = {}
-    for _, pair in ipairs(self.fpsHistory) do
-        table.insert(fpsValues, pair)
+function Field:findMedianTickRateTable()
+    local tickRateValues = {}
+    for _, pair in ipairs(self.tickRateHistory) do
+        table.insert(tickRateValues, pair)
     end
-    table.sort(fpsValues, function(a, b) return a.fps < b.fps end)
-    local medianIndex = math.floor(#fpsValues/2)
-    return fpsValues[medianIndex]
+    table.sort(tickRateValues, function(a, b) return a.tickRate < b.tickRate end)
+    local medianIndex = math.floor(#tickRateValues/2)
+    return tickRateValues[medianIndex]
 end
 
 function Field:savePopulationHistory(population)
@@ -103,18 +100,18 @@ function Field:savePopulationHistory(population)
     self.populationHistory[#self.populationHistory+1] = population
 end
 
-function Field:adjustmentNeeded(population, fps, targetFps, maxPop)
+function Field:adjustmentNeeded(population, tickRate, targetTickRate, maxPop)
     if maxPop and #self.critters > maxPop then
         return #self.critters - maxPop
     end
-    if fps > targetFps then
-        self.lastGoodFPS = #self.populationHistory
+    if tickRate > targetTickRate then
+        self.lastGoodTickRate = #self.populationHistory
         return 0
     else
-        print(targetFps, population , self.populationHistory[self.lastGoodFPS] , targetFps)
-        local adjustment = population - self.populationHistory[self.lastGoodFPS] - targetFps
-        if self.lastGoodFPS % 3 == 0 then
-            self.lastGoodFPS = self.lastGoodFPS
+        print(targetTickRate, population , self.populationHistory[self.lastGoodTickRate] , targetTickRate)
+        local adjustment = population - self.populationHistory[self.lastGoodTickRate] - targetTickRate
+        if self.lastGoodTickRate % 3 == 0 then
+            self.lastGoodTickRate = self.lastGoodTickRate
         end
         return adjustment
     end
@@ -128,19 +125,19 @@ function Field:removeRandomCritters(adjustment)
     end
 end
 
-function Field:getPopulationForFpsTarget(medianFps, medianPopulation, targetFps)
-    local ratio = medianPopulation / medianFps
-    local targetPopulation = math.ceil(targetFps * ratio)
+function Field:getPopulationForTickRateTarget(medianTickRate, medianPopulation, targetTickRate)
+    local ratio = medianPopulation / medianTickRate
+    local targetPopulation = math.ceil(targetTickRate * ratio)
     return targetPopulation
 end
 
-function Field:storeFpsHistory(fps, population)
-    local pair = {fps=fps, population=population}
-    if #self.fpsHistory < 100 then
-        table.insert(self.fpsHistory, pair)
+function Field:storeTickRateHistory(tickRate, population)
+    local pair = {tickRate=tickRate, population=population}
+    if #self.tickRateHistory < 100 then
+        table.insert(self.tickRateHistory, pair)
     else
-        table.insert(self.fpsHistory, 1, pair)
-        self.fpsHistory[101] = nil
+        table.insert(self.tickRateHistory, 1, pair)
+        self.tickRateHistory[101] = nil
     end
 end
 

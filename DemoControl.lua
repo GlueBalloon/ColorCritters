@@ -41,6 +41,7 @@ end
 function DemoControl:updateDemoAndReset(newDemoIndex)
     -- Update the selected demo and call resetFunction
     field = Field()
+    field:resetCritters()
     output.clear()
     parameter.clear()
     self.lastSliderValue = newDemoIndex

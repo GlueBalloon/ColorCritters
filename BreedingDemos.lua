@@ -53,8 +53,8 @@ function BasicMating()
         
         setContext(self.drawer.buffer)
         background(self.backgroundColor)
-        self.fps=self.fps*.9+.1/DeltaTime
-        if self.fps < 30 then
+        self.tickRate=self.tickRate*.9+.1/DeltaTime
+        if self.tickRate < 30 then
             self.isCustomSetup = false
         end
         local babies = {}
@@ -395,8 +395,8 @@ function TinyBreeders()
 end
 
 
---when fps drops too low, oldest critters get removed
-function PopulationTiedToFPS()
+--when tickRate drops too low, oldest critters get removed
+function PopulationTiedToTickRate()
     function Field:draw()
 
         --functions for spawning custom critters
@@ -422,7 +422,7 @@ function PopulationTiedToFPS()
             self.backgroundColor = color(16, 21, 16)
             respawn()
             parameter.clear()
-            parameter.watch("fps")
+            parameter.watch("tickRate")
             parameter.watch("pop")
             parameter.watch("cull")
             parameter.watch("numDeaths")
@@ -446,7 +446,7 @@ function PopulationTiedToFPS()
         self.babies = {}
         self.ageTable = {}
         self.randoPercent = 0.08 --not in self by default
-        self.fpsTarget = 15 --not in self by default
+        self.tickRateTarget = 15 --not in self by default
         
         --cycle through critters
         for i, critter in ipairs(self.critters) do
@@ -473,14 +473,14 @@ function PopulationTiedToFPS()
             ::nextCritter::
         end    
         
-        --check fps to see if culling is needed
-        self.fps=self.fps*.9+.1/DeltaTime
+        --check tickRate to see if culling is needed
+        self.tickRate=self.tickRate*.9+.1/DeltaTime
         self:savePopulationHistory(#self.critters)
-        local fpsTargetTweaked = self.fpsTarget * 1.3
-        self.numToCull = self:adjustmentNeeded(#self.critters, self.fps, fpsTargetTweaked, 10000)
+        local tickRateTargetTweaked = self.tickRateTarget * 1.3
+        self.numToCull = self:adjustmentNeeded(#self.critters, self.tickRate, tickRateTargetTweaked, 10000)
         --add a little extra to numToCull if not zero, for random replacements
         self.numToCull = math.ceil(self.numToCull * (1 + self.randoPercent))
-        fps = self.fps
+        tickRate = self.tickRate
         pop = #self.critters
         cull = self.numToCull
         ages = #self.ageTable
@@ -631,9 +631,9 @@ function GroupStreakers()
             table.insert(self.critters, baby)
         end
         
-        self.fps=self.fps*.9+.1/DeltaTime
+        self.tickRate=self.tickRate*.9+.1/DeltaTime
         self:savePopulationHistory(#self.critters)
-        local popAdjustment = self:adjustmentNeeded(#self.critters, self.fps, 30, 2000)
+        local popAdjustment = self:adjustmentNeeded(#self.critters, self.tickRate, 30, 2000)
         self:removeRandomCritters(popAdjustment)
         
         

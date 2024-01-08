@@ -11,6 +11,7 @@ Actual Main tab.
 
 function setup()
     field = Field()
+    field:resetCritters()
     demoControl = DemoControl()
     demoControl.resetFunction = function()
         field:resetCritters()
