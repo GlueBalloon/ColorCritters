@@ -58,12 +58,38 @@ function PopTracker:amountOverTarget(population, tickRate, targetRate, maxPop)
     end 
 end
 
+-- CritterTracker class
+CritterTracker = class()
+
+function CritterTracker:init(critters)
+    self.all = critters or {}
+    self.babies = {}
+    self.ageTable = {}
+    self.oldest = {}
+end
+
 -- Field class
 Field = class()
 
 function Field:init(critters, bgColor)
     self.backgroundColor = bgColor or color(24, 27, 40)
-    self.critters = critters or {}
+    self.critters = CritterTracker(critters)
+    self.popHistory = {}
+    self.numToCull = 0
+    self.isCustomSetup = false
+    self.drawer = FieldDrawer(self)
+    self.tickRate = 0
+    self.popTracker = PopTracker()
+end
+
+-- ... rest of Field methods ...
+
+-- Field class
+Field = class()
+
+function Field:init(critters, bgColor)
+    self.backgroundColor = bgColor or color(24, 27, 40)
+    self.critters = CritterTracker(critters)
     self.babies = {}
     self.ageTable = {}
     self.oldest = {}
@@ -76,14 +102,14 @@ function Field:init(critters, bgColor)
 end
 
 function Field:resetCritters(numNew)
-    self.critters = {}
+    self.critters.all = {}
     if not numNew then
         numNew = math.random(60, 120)
     end
     for i = 1, numNew do
         local newCritter = ColorCritter()
-        table.insert(self.critters, newCritter)
-        newCritter.id = #self.critters
+        table.insert(self.critters.all, newCritter)
+        newCritter.id = #self.critters.all
     end
 end
 
@@ -116,8 +142,8 @@ end
 
 function Field:removeRandomCritters(adjustment)
     while adjustment > 0 do
-        local index = math.random(#self.critters)
-        local value = table.remove(self.critters, index)
+        local index = math.random(#self.critters.all)
+        local value = table.remove(self.critters.all, index)
         adjustment = adjustment - 1
     end
 end

@@ -6,7 +6,7 @@ function BasicMating()
             local startingPop = math.max(WIDTH, HEIGHT) * 0.02
             self:resetCritters(startingPop)
             self.backgroundColor = color(106, 38, 122)
-            for _, critter in ipairs(self.critters) do
+            for _, critter in ipairs(self.critters.all) do
                 critter.speed = 12
                 critter.size = 70
                 critter.mateColorVariance = 1
@@ -58,7 +58,7 @@ function BasicMating()
             self.isCustomSetup = false
         end
         local babies = {}
-        for _, critter in ipairs(self.critters) do
+        for _, critter in ipairs(self.critters.all) do
             -- call critter's own draw function, which may return a baby
             local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, store it
@@ -67,7 +67,7 @@ function BasicMating()
             end
         end
         for _, baby in ipairs(babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         if showLastBufferThumbnail then
             pushStyle()
@@ -88,7 +88,7 @@ function JitteryBreeders()
     function Field:draw()
         self:drawAndSwapBuffer()
         function respawn()
-            field.critters = {}
+            field.critters.all = {}
             local limit = math.ceil(randomFromScreen(0.5))
             for i = 1, limit do
                 defineCritter(ColorCritter())
@@ -100,7 +100,7 @@ function JitteryBreeders()
             critter.timeToFertility = math.random(4, 665)
             critter.position = pos or critter.position
             critter.mutationRate = 0.0
-            table.insert(field.critters, critter)
+            table.insert(field.critters.all, critter)
         end
         --setup functions
         if not self.isCustomSetup then
@@ -115,7 +115,7 @@ function JitteryBreeders()
         local babies = {}
         
         --manually control critters
-        for _, critter in ipairs(self.critters) do
+        for _, critter in ipairs(self.critters.all) do
             --advance fertility
             critter.fertilityCounter = critter.fertilityCounter + 1
             -- Find a point outside the critter
@@ -142,7 +142,7 @@ function JitteryBreeders()
                 nextPosition = self:wrapIfNeeded(recalculated)
                 --and if fertile, make a baby
                 if critter.fertilityCounter >= critter.timeToFertility then
-                    if #self.critters < 40000 then
+                    if #self.critters.all < 40000 then
                         local baby = critter:reproduce(colorAtPoint)
                         defineCritter(baby, outsidePoint)
                         table.insert(babies, baby)
@@ -164,7 +164,7 @@ function JitteryBreeders()
             end
         end
         for _, baby in ipairs(babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         if showLastBufferThumbnail then
             pushStyle()
@@ -180,9 +180,9 @@ function JitteryBreeders()
         end
         
         fill(20, 28, 29)
-        text(#self.critters, 41.5, 88.5)
+        text(#self.critters.all, 41.5, 88.5)
         fill(242, 240, 239)
-        text(#self.critters, 41, 89)
+        text(#self.critters.all, 41, 89)
         
         
     end
@@ -227,7 +227,7 @@ function PickyBreeders()
             showBufferThumbnail = false
             local startingPop = math.max(WIDTH, HEIGHT) * 0.05
             self:resetCritters(startingPop)
-            for i, critter in ipairs(self.critters) do
+            for i, critter in ipairs(self.critters.all) do
                 scenarioSettings(critter)
             end
         end   
@@ -242,7 +242,7 @@ function PickyBreeders()
         setContext(self.drawer.buffer)
         background(self.backgroundColor)
         -- go through the critters
-        for i, critter in ipairs(self.critters) do  
+        for i, critter in ipairs(self.critters.all) do  
             
             -- track which 'species' this critter is        
             if critter.id == "y" then
@@ -266,10 +266,10 @@ function PickyBreeders()
         end
         
         for _, baby in ipairs(babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         for index=#deaths, 1, -1 do
-            table.remove(self.critters, index)
+            table.remove(self.critters.all, index)
         end
         
         if showBufferThumbnail then
@@ -323,11 +323,11 @@ function TinyBreeders()
             new.timeToFertility = math.random(60, 110)
             new.mortality = new.timeToFertility * math.random(40, 50) * 0.1
             new.position = pos or new.position
-            table.insert(field.critters, new)
+            table.insert(field.critters.all, new)
         end
         function respawn()
             local startingPop = math.max(WIDTH, HEIGHT) * 0.2
-            field.critters = {}
+            field.critters.all = {}
             for i = 1, startingPop do
                 newCritter()
             end
@@ -344,7 +344,7 @@ function TinyBreeders()
         
         local deaths = {}
         local babies = {}
-        for _, critter in ipairs(self.critters) do
+        for _, critter in ipairs(self.critters.all) do
             
             -- call critter's own draw function, which may return a baby
             local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
@@ -361,11 +361,11 @@ function TinyBreeders()
         end
         
         for _, baby in ipairs(babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         
         for index=#deaths, 1, -1 do
-            table.remove(self.critters, index)
+            table.remove(self.critters.all, index)
         end
         
         if showLastBufferThumbnail then
@@ -384,9 +384,9 @@ function TinyBreeders()
         pushStyle()
         textMode(CORNER)
         fill(35)
-        text("population: "..tostring(#self.critters), 100, 80)
+        text("population: "..tostring(#self.critters.all), 100, 80)
         fill(173, 88, 189)
-        text("population: "..tostring(#self.critters), 102, 82)
+        text("population: "..tostring(#self.critters.all), 102, 82)
         popStyle()
         
         
@@ -408,11 +408,11 @@ function PopulationTiedToTickRate()
             new.timeToFertility = math.random(80, 90)
             new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
             new.position = pos or new.position
-            table.insert(field.critters, new)
+            table.insert(field.critters.all, new)
         end
         function respawn()
             local startingPop = math.max(WIDTH, HEIGHT) * 0.2
-            field.critters = {}
+            field.critters.all = {}
             for i = 1, 100 do
                 newCritter()
             end
@@ -449,7 +449,7 @@ function PopulationTiedToTickRate()
         self.tickRateTarget = 15 --not in self by default
         
         --cycle through critters
-        for i, critter in ipairs(self.critters) do
+        for i, critter in ipairs(self.critters.all) do
             -- if critter has died, collect index and skip loop
             if critter.alive == false then
                 table.insert(self.deaths, i)
@@ -475,13 +475,13 @@ function PopulationTiedToTickRate()
         
         --check tickRate to see if culling is needed
         self.tickRate=self.tickRate*.9+.1/DeltaTime
-        self.popTracker:update(#self.critters)
+        self.popTracker:update(#self.critters.all)
         local tickRateTargetTweaked = self.tickRateTarget * 1.3
-        self.numToCull = self:amountOverTargetPop(#self.critters, self.tickRate, tickRateTargetTweaked, 10000)
+        self.numToCull = self.popTracker:amountOverTarget(#self.critters.all, self.tickRate, tickRateTargetTweaked, 10000)
         --add a little extra to numToCull if not zero, for random replacements
         self.numToCull = math.ceil(self.numToCull * (1 + self.randoPercent))
         tickRate = self.tickRate
-        pop = #self.critters
+        pop = #self.critters.all
         cull = self.numToCull
         ages = #self.ageTable
         ageTable = self.ageTable
@@ -533,12 +533,12 @@ function PopulationTiedToTickRate()
         for i=#uniqueIndexes, 1, -1 do
             --allow for randos to add
             if i > self.numToCull * self.randoPercent then
-                table.remove(self.critters, uniqueIndexes[i])
+                table.remove(self.critters.all, uniqueIndexes[i])
             end
         end   
 
         for _, baby in ipairs(self.babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         
         --if some were culled, add in some new random creatures
@@ -578,10 +578,10 @@ function GroupStreakers()
             new.timeToFertility = math.random(20, 80)
             new.mortality = new.timeToFertility * math.random(11, 50) * 0.1
             new.position = pos or new.position
-            table.insert(field.critters, new)
+            table.insert(field.critters.all, new)
         end
         function respawn()
-            field.critters = {}
+            field.critters.all = {}
             for i = 1, 100 do
                 newCritter()
             end
@@ -593,7 +593,7 @@ function GroupStreakers()
             backgroundBlankImage = image(WIDTH,HEIGHT)
             backgroundClearCounter = 0
         end
-        if #self.critters > 2000 then
+        if #self.critters.all > 2000 then
             respawn()
         end
         
@@ -609,7 +609,7 @@ function GroupStreakers()
         local deaths = {}
         self.babies = {}
         self.oldest = {}
-        for _, critter in ipairs(self.critters) do
+        for _, critter in ipairs(self.critters.all) do
             -- call critter's own draw function, which may return a baby
             local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, tag it and store it
@@ -624,21 +624,21 @@ function GroupStreakers()
         end
         
         for i, index in ipairs(deaths) do
-            table.remove(self.critters, index)
+            table.remove(self.critters.all, index)
         end
         
         for _, baby in ipairs(self.babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         
         self.tickRate=self.tickRate*.9+.1/DeltaTime
-        self.popTracker:update(#self.critters)
-        local popAdjustment = self:amountOverTargetPop(#self.critters, self.tickRate, 30, 2000)
+        self.popTracker:update(#self.critters.all)
+        local popAdjustment = self.popTracker:amountOverTarget(#self.critters.all, self.tickRate, 30, 2000)
         self:removeRandomCritters(popAdjustment)
         
         
         if CurrentTouch.state == BEGAN then
-            for i, critter in pairs(self.critters) do
+            for i, critter in pairs(self.critters.all) do
                 critter.direction = vec2(math.random()-0.5, math.random()-0.5):normalize()
             end
         end

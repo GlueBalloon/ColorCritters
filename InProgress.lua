@@ -6,7 +6,7 @@ function Field:draw()
         setupDone = true
         field:resetCritters(8000)
     end
-    for _, critter in ipairs(self.critters) do
+    for _, critter in ipairs(self.critters.all) do
         
         -- Find a point outside the critter
         local outsidePoint = critter:pointOutsideSelf()       

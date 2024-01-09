@@ -6,7 +6,7 @@ function Stillness()
     end
     function Field:draw()
         background(204, 110, 171)
-        for i, critter in ipairs(self.critters) do
+        for i, critter in ipairs(self.critters.all) do
             -- Draw critter as an ellipse with size and color
             fill(critter.color.r, critter.color.g, critter.color.b, critter.color.a)
             ellipse(critter.position.x, critter.position.y, critter.size)
@@ -21,7 +21,7 @@ function Movers()
         self:drawAndSwapBuffer()   
         self.backgroundColor = color(21, 31, 21)
         background(self.backgroundColor)   
-        for _, critter in ipairs(self.critters) do       
+        for _, critter in ipairs(self.critters.all) do       
             -- Find a point outside the critter
             local outsidePoint = critter:pointOutsideSelf()       
             -- find direction to that point
@@ -58,7 +58,7 @@ end
 function Streakers()
     --critters that travel in a straight line, painting the screen
     function Field:draw()
-        for i, critter in ipairs(self.critters) do
+        for i, critter in ipairs(self.critters.all) do
             -- Calculate new position based on direction and speed
             local newPosition = critter.position + critter.direction * critter.speed 
             
@@ -76,11 +76,11 @@ function Streakers()
         self:drawAndSwapBuffer()
         -- randomize direction on touch
         if CurrentTouch.state == BEGAN then
-            for i, critter in pairs(self.critters) do
+            for i, critter in pairs(self.critters.all) do
                 critter.direction = vec2(math.random()-0.5, math.random()-0.5):normalize()
             end
         elseif CurrentTouch.state == CHANGED then
-            for i, critter in pairs(self.critters) do
+            for i, critter in pairs(self.critters.all) do
                 critter.direction = vec2(math.random()-0.5, math.random()-0.5):normalize()
             end
         end
@@ -97,13 +97,13 @@ function AccidentalBlobs()
         
         background(self.backgroundColor)
         
-        if #self.critters > 2000 then
+        if #self.critters.all > 2000 then
             local new = ColorCritter()
             new.mutationRate = 0.95
-            self.critters = {new}
+            self.critters.all = {new}
         end
         local babies = {}
-        for _, critter in ipairs(self.critters) do
+        for _, critter in ipairs(self.critters.all) do
             --advance fertility
             critter.fertilityCounter = critter.fertilityCounter + 1
             -- Find a point outside the critter
@@ -137,7 +137,7 @@ function AccidentalBlobs()
             ellipse(critter.position.x, critter.position.y, critter.size)       
         end
         for _, baby in ipairs(babies) do
-            table.insert(self.critters, baby)
+            table.insert(self.critters.all, baby)
         end
         if CurrentTouch.state == BEGAN then
             local new = ColorCritter()
