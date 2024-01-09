@@ -443,7 +443,7 @@ function PopulationTiedToTickRate()
         
         --reset deaths, babies, and age tables
         self.deaths = {}
-        self.babies = {}
+        self.critters.babies = {}
         self.ageTable = {}
         self.randoPercent = 0.08 --not in self by default
         self.tickRateTarget = 15 --not in self by default
@@ -459,7 +459,7 @@ function PopulationTiedToTickRate()
             local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
             -- if it did return a baby, store it
             if babyMaybe ~= nil then
-                table.insert(self.babies, babyMaybe)
+                table.insert(self.critters.babies, babyMaybe)
             end
             -- place in ageTable if needed
             if self.numToCull > 0 then
@@ -537,7 +537,7 @@ function PopulationTiedToTickRate()
             end
         end   
 
-        for _, baby in ipairs(self.babies) do
+        for _, baby in ipairs(self.critters.babies) do
             table.insert(self.critters.all, baby)
         end
         
@@ -607,7 +607,7 @@ function GroupStreakers()
         end
         
         local deaths = {}
-        self.babies = {}
+        self.critters.babies = {}
         self.oldest = {}
         for _, critter in ipairs(self.critters.all) do
             -- call critter's own draw function, which may return a baby
@@ -615,7 +615,7 @@ function GroupStreakers()
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
-                table.insert(self.babies, babyMaybe)
+                table.insert(self.critters.babies, babyMaybe)
             end
             -- if creature has died, add index to the death table
             if critter.alive == false then
@@ -627,7 +627,7 @@ function GroupStreakers()
             table.remove(self.critters.all, index)
         end
         
-        for _, baby in ipairs(self.babies) do
+        for _, baby in ipairs(self.critters.babies) do
             table.insert(self.critters.all, baby)
         end
         

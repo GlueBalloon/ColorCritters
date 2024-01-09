@@ -23,6 +23,10 @@ function FieldDrawer:drawAndSwapBuffer(field)
     setContext(self.buffer)
 end
 
+
+
+
+
 -- PopTracker class
 PopTracker = class()
 
@@ -58,6 +62,9 @@ function PopTracker:amountOverTarget(population, tickRate, targetRate, maxPop)
     end 
 end
 
+
+
+
 -- CritterTracker class
 CritterTracker = class()
 
@@ -68,21 +75,8 @@ function CritterTracker:init(critters)
     self.oldest = {}
 end
 
--- Field class
-Field = class()
 
-function Field:init(critters, bgColor)
-    self.backgroundColor = bgColor or color(24, 27, 40)
-    self.critters = CritterTracker(critters)
-    self.popHistory = {}
-    self.numToCull = 0
-    self.isCustomSetup = false
-    self.drawer = FieldDrawer(self)
-    self.tickRate = 0
-    self.popTracker = PopTracker()
-end
 
--- ... rest of Field methods ...
 
 -- Field class
 Field = class()
@@ -90,7 +84,6 @@ Field = class()
 function Field:init(critters, bgColor)
     self.backgroundColor = bgColor or color(24, 27, 40)
     self.critters = CritterTracker(critters)
-    self.babies = {}
     self.ageTable = {}
     self.oldest = {}
     self.popHistory = {}
