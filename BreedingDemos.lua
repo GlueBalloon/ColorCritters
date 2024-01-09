@@ -444,7 +444,7 @@ function PopulationTiedToTickRate()
         --reset deaths, babies, and age tables
         self.deaths = {}
         self.critters.babies = {}
-        self.ageTable = {}
+        self.critters.ageTable = {}
         self.randoPercent = 0.08 --not in self by default
         self.tickRateTarget = 15 --not in self by default
         
@@ -461,14 +461,14 @@ function PopulationTiedToTickRate()
             if babyMaybe ~= nil then
                 table.insert(self.critters.babies, babyMaybe)
             end
-            -- place in ageTable if needed
+            -- place in critters.ageTable if needed
             if self.numToCull > 0 then
                 local age = critter.age
-                if not self.ageTable[age] then
-                    self.ageTable[age] = {}
+                if not self.critters.ageTable[age] then
+                    self.critters.ageTable[age] = {}
                 end
                 local indexTable = {critter=critter, index=i}
-                table.insert(self.ageTable[age], indexTable)
+                table.insert(self.critters.ageTable[age], indexTable)
             end
             ::nextCritter::
         end    
@@ -483,15 +483,15 @@ function PopulationTiedToTickRate()
         tickRate = self.tickRate
         pop = #self.critters.all
         cull = self.numToCull
-        ages = #self.ageTable
-        ageTable = self.ageTable
-        -- if culling is needed, use ageTable to add to kill list
+        ages = #self.critters.ageTable
+        --ageTable = self.critters.ageTable
+        -- if culling is needed, use critters.ageTable to add to kill list
         if self.numToCull > 0 then
             
             local culledCount = 0
             
-            for age = #self.ageTable, 1, -1 do
-                local crittersAtAge = self.ageTable[age]
+            for age = #self.critters.ageTable, 1, -1 do
+                local crittersAtAge = self.critters.ageTable[age]
                 if crittersAtAge then
                     for i, indexTable in ipairs(crittersAtAge) do
                         local critter = indexTable.critter
