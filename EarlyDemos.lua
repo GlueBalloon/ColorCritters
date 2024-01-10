@@ -1,6 +1,6 @@
 
 --first ever drawing of critters   
-function Stillness()
+function Immobile()
     if demoControl.selectedDemo ~= 1 then
         return
     end

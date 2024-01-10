@@ -107,6 +107,138 @@ end
 
 --------= color stuff
 
+function hueNumberFromColor(aColor)
+    local h, _, _ = colorToHSB(aColor)
+    return h / 360 -- Normalize to the range [0, 1]
+end
+
+-- Define color categories and their hue ranges
+local colorCategories = {
+    {name = "RedOrange", hueRange = {0.00, 0.14}, weightedHueRange = {0.00, 0.21}},
+    {name = "Yellow", hueRange = {0.14, 0.17}, weightedHueRange = {0.21, 0.26}},
+    {name = "Green", hueRange = {0.17, 0.46}, weightedHueRange = {0.26, 0.32}},
+    {name = "Blue", hueRange = {0.46, 0.71}, weightedHueRange = {0.32, 0.62}},
+    {name = "Purple", hueRange = {0.71, 0.81}, weightedHueRange = {0.62, 0.79}},
+    {name = "PinkRed", hueRange = {0.81, 1.0}, weightedHueRange = {0.79, 1.0}}
+}
+--[[
+local colorCategories = {
+    {name = "Red", hueRange = {0.00, 0.05}, weightedHueRange = {0.00, 0.17}},
+    {name = "Orange", hueRange = {0.12, 0.14}, weightedHueRange = {0.17, 0.34}},
+    {name = "Yellow", hueRange = {0.23, 0.17}, weightedHueRange = {0.34, 0.51}},
+    {name = "Green", hueRange = {0.33, 0.46}, weightedHueRange = {0.51, 0.52}},
+    {name = "Blue", hueRange = {0.52, 0.75}, weightedHueRange = {0.52, 0.85}},
+    {name = "Purple", hueRange = {0.75, 1.00}, weightedHueRange = {0.85, 1.0}}
+}]]
+
+
+function hueToWeightedHue(hue)
+    -- Ensure hue is within the valid range [0, 1]
+    hue = hue % 1.0
+
+    -- Find the category corresponding to the input hue
+    for _, category in ipairs(colorCategories) do
+        if hue >= category.hueRange[1] and hue <= category.hueRange[2] then
+            -- Calculate the percentage within the category's hue range
+            local percentage = (hue - category.hueRange[1]) / (category.hueRange[2] - category.hueRange[1])
+
+            -- Map the percentage to the corresponding weighted hue range
+            local weightedHue = category.weightedHueRange[1] + percentage * (category.weightedHueRange[2] - category.weightedHueRange[1])
+
+            return weightedHue
+        end
+    end
+
+    return nil -- This should never happen if categories cover the entire range
+end
+
+
+-- Function to convert weighted hue back to hue
+function weightedHueToHue(weightedHue)
+    for _, category in ipairs(colorCategories) do
+        if weightedHue >= category.weightedHueRange[1] and 
+        weightedHue <= category.weightedHueRange[2] then
+            local normalizedWeightedHue = 
+                (weightedHue - category.weightedHueRange[1]) / 
+                (category.weightedHueRange[2] - category.weightedHueRange[1])
+            return normalizedWeightedHue * (category.hueRange[2] - 
+                category.hueRange[1]) + category.hueRange[1]
+        end
+    end
+    return nil -- This should never happen if categories cover the entire range
+end
+
+function weightedHueToHue(weightedHue)
+    -- Ensure weightedHue is within the valid range [0, 1]
+    weightedHue = weightedHue % 1.0
+
+    -- Find the category corresponding to the input weightedHue
+    for _, category in ipairs(colorCategories) do
+        if weightedHue >= category.weightedHueRange[1] and 
+        weightedHue <= category.weightedHueRange[2] then
+            -- Calculate the percentage within the category's weighted hue range
+            local percentage = (weightedHue - category.weightedHueRange[1]) / (category.weightedHueRange[2] - category.weightedHueRange[1])
+
+            -- Map the percentage to the corresponding regular hue range
+            local hue = category.hueRange[1] + percentage * (category.hueRange[2] - category.hueRange[1])
+
+            return hue
+        end
+    end
+
+    return nil -- This should never happen if categories cover the entire range
+end
+
+
+-- Function to generate a random color
+function randomColor()
+    -- Generate a random weighted hue
+    local weightedHue = math.random()
+
+    -- Convert the weighted hue to a regular hue
+    local hue = weightedHueToHue(weightedHue)
+
+    -- Convert the hue to the 0-360 range
+    hue = hue * 360
+
+    -- Generate random saturation and brightness values
+    local saturation = math.random(58,100) * 0.01 --not too bright now!
+    local brightness = math.random(62,100) * 0.01 --not too dark now!
+
+    -- Return the new color
+    return hsbToColor(hue, saturation, brightness)
+end
+
+function randomizeColorWithinVariance(aColor, variance)
+    local hue, saturation, brightness = colorToHSB(aColor)
+    hue = hue / 360 -- Convert to 0-1 range
+
+    -- Convert the hue to a weighted hue
+    local weightedHue = hueToWeightedHue(hue)
+
+    -- Calculate the variance range in the weighted hue scale
+    local minWeightedHue = math.max(weightedHue - variance, 0)
+    local maxWeightedHue = math.min(weightedHue + variance, 1)
+
+    -- Scale up the range to a larger number (e.g., 10000 for precision)
+    local scale = 10000
+    local minWeightedHueScaled = math.floor(minWeightedHue * scale)
+    local maxWeightedHueScaled = math.ceil(maxWeightedHue * scale)
+
+    -- Generate a random weighted hue within this range
+    local randomWeightedHueScaled = math.random(minWeightedHueScaled, maxWeightedHueScaled)
+
+    -- Scale the random weighted hue back down
+    local randomWeightedHue = randomWeightedHueScaled / scale
+
+    -- Convert the random weighted hue back to a regular hue
+    local randomHue = weightedHueToHue(randomWeightedHue)
+
+    -- Create color with random hue and input color's saturation and brightness
+    return hsbToColor(randomHue * 360, saturation, brightness)
+end
+
+
 function colorToHSB(aColor)
     local r, g, b = aColor.r / 255, aColor.g / 255, aColor.b / 255
     local max, min = math.max(r, g, b), math.min(r, g, b)
@@ -167,41 +299,41 @@ function clamp(value, min, max)
     return math.min(max, math.max(min, value))
 end
 
--- Function to generate a color copy with random variance
-function randomizeColorWithinVariance(aColor, variance)
-    local h, s, b, a = colorToHSB(aColor)
+-- -- Function to generate a color copy with random variance
+-- function randomizeColorWithinVariance(aColor, variance)
+--     local h, s, b, a = colorToHSB(aColor)
     
-    -- Apply random variance to each component
-    local hShift = (math.random() * 2 - 1) * variance * 360 -- Hue ranges from 0 to 360
-    local sShift = (math.random() * 2 - 1) * variance      -- Saturation ranges from 0 to 1
-    local bShift = (math.random() * 2 - 1) * variance      -- Brightness ranges from 0 to 1
+--     -- Apply random variance to each component
+--     local hShift = (math.random() * 2 - 1) * variance * 360 -- Hue ranges from 0 to 360
+--     local sShift = (math.random() * 2 - 1) * variance      -- Saturation ranges from 0 to 1
+--     local bShift = (math.random() * 2 - 1) * variance      -- Brightness ranges from 0 to 1
     
-    -- Clamp the new values to ensure they are within the valid range
-    local newH = clamp(h + hShift, 0, 360)
-    local newS = clamp(s + sShift, 0, 1)
-    local newB = clamp(b + bShift, 0, 1)
+--     -- Clamp the new values to ensure they are within the valid range
+--     local newH = clamp(h + hShift, 0, 360)
+--     local newS = clamp(s + sShift, 0, 1)
+--     local newB = clamp(b + bShift, 0, 1)
     
-    -- Convert back to a color
-    return hsbToColor(newH, newS, newB, a)
-end
+--     -- Convert back to a color
+--     return hsbToColor(newH, newS, newB, a)
+-- end
 
-function randomHueInRange(value, variance)
-    local absVariance = math.abs(variance * 10000)
-    local lowerVariance = math.floor(-1 * absVariance)
-    local higherVariance = math.ceil(absVariance)
-    if lowerVariance == higherVariance then
-        return value
-    end
-    local rngRoll = math.random(lowerVariance, higherVariance)
-    local rawResult = (value * 100) + rngRoll
-    local fixedResult = rawResult / 10000
-    if rawResult < 0 then
-        fixedResult = 360 - math.abs(rawResult)
-    elseif rawResult > 360 then
-        fixedResult = rawResult - 360
-    end
-    return fixedResult
-end
+-- function randomHueInRange(value, variance)
+--     local absVariance = math.abs(variance * 10000)
+--     local lowerVariance = math.floor(-1 * absVariance)
+--     local higherVariance = math.ceil(absVariance)
+--     if lowerVariance == higherVariance then
+--         return value
+--     end
+--     local rngRoll = math.random(lowerVariance, higherVariance)
+--     local rawResult = (value * 100) + rngRoll
+--     local fixedResult = rawResult / 10000
+--     if rawResult < 0 then
+--         fixedResult = 360 - math.abs(rawResult)
+--     elseif rawResult > 360 then
+--         fixedResult = rawResult - 360
+--     end
+--     return fixedResult
+-- end
 
 function testColorBlending(iterations, blendSteps)
     math.randomseed(os.time())  -- Ensure random seed
@@ -256,24 +388,43 @@ function randomColorBetween(color1, color2)
     local s1, s2 = hsb1.y, hsb2.y
     local b1, b2 = hsb1.z, hsb2.z
     
-    --set new hue
+    -- Generate random values for saturation and brightness within the range
+    local newSat = math.random() * (s2 - s1) + s1
+    local newBri = math.random() * (b2 - b1) + b1
+    
+    -- Calculate hue change within the range and wrap around
     local hueDiff = h2 - h1
-    if math.abs(hueDiff) > 180 then 
-        hueDiff = -sign(hueDiff) * (360 - math.abs(hueDiff))
-    end
-    local hueChange = math.random() * hueDiff
-    local newHue = h1 + hueChange
-    newHue = newHue % 360  -- Wrap the hue value properly
-    
-    --set new saturation
-    local t_sat = math.random()^0.5
-    local newSat = lerp(s1, s2, t_sat)
-    
-    --set new brightness
-    local t_bri = math.random()^0.5
-    local newBri = lerp(b1, b2, t_bri)
+    local newHue = (math.random() * hueDiff + h1) % 360
     
     return hsbToColor(newHue, newSat, newBri)
+end
+
+function randomColorAvoidingMuddinessBetween(color1, color2)
+    local hsb1 = vec3(colorToHSB(color1))
+    local hsb2 = vec3(colorToHSB(color2))
+
+    local h1, h2 = hsb1.x, hsb2.x
+    local s1, s2 = hsb1.y, hsb2.y
+    local b1, b2 = hsb1.z, hsb2.z
+
+    -- Calculate hue change within the range and wrap around
+    local hueDiff = h2 - h1
+    local hueChange = (math.random() * hueDiff + h1) % 360
+
+    -- Generate random saturation and brightness within adjusted ranges
+    local minSat = math.max(s1, s2) - 0.025
+    local maxSat = math.min(s1, s2) + 0.1
+    local newSat = randomFloat(minSat, maxSat)
+
+    local minBri = math.max(b1, b2) - 0.025
+    local maxBri = math.min(b1, b2) + 0.1
+    local newBri = randomFloat(minBri, maxBri)
+
+    return hsbToColor(hueChange, newSat, newBri)
+end
+
+function randomFloat(min, max)
+    return min + math.random() * (max - min)
 end
 
 function sign(x)
@@ -286,34 +437,60 @@ function sign(x)
     end
 end
 
+-- function colorsExceedVariance(color1, color2, variance)
+--     local hue1 = hueFromColor(color1)
+--     local hue2 = hueFromColor(color2)
+    
+--     local hueDiff = math.abs(hue1 - hue2)
+--     if hueDiff > 180 then
+--         hueDiff = 360 - hueDiff
+--     end
+    
+--     local allowedVarianceScaled = 360 * variance --why not 360?
+--     local matingAllowed = not (hueDiff > allowedVarianceScaled)
+--    -- print("allowedVarianceScaled, hueDiff, matingAllowed ", allowedVarianceScaled, ", ", hueDiff, ", ", matingAllowed)
+--     if hueDiff > allowedVarianceScaled then
+--         return true
+--     else
+--         return false
+--     end
+-- end
+
 function colorsExceedVariance(color1, color2, variance)
-    local hue1 = hueFromColor(color1)
-    local hue2 = hueFromColor(color2)
     
-    local hueDiff = math.abs(hue1 - hue2)
-    if hueDiff > 180 then
-        hueDiff = 360 - hueDiff
+    if variance <= 0.0 or variance <= 0 then return true end
+    
+    local hue1 = hueFromColor(color1) / 360 -- Convert to 0-1 range
+    local hue2 = hueFromColor(color2) / 360 -- Convert to 0-1 range
+    
+    -- Convert the hues to weighted hues
+    local weightedHue1 = hueToWeightedHue(hue1)
+    local weightedHue2 = hueToWeightedHue(hue2)
+
+    local hueDiff = math.abs(weightedHue1 - weightedHue2)
+    if hueDiff > 0.5 then
+        hueDiff = 1 - hueDiff
     end
-    
-    local allowedVarianceScaled = 360 * variance --why not 360?
-    local matingAllowed = not (hueDiff > allowedVarianceScaled)
-   -- print("allowedVarianceScaled, hueDiff, matingAllowed ", allowedVarianceScaled, ", ", hueDiff, ", ", matingAllowed)
-    if hueDiff > allowedVarianceScaled then
+
+    local allowedVariance = variance -- No need to scale by 360 now
+    local matingAllowed = not (hueDiff > allowedVariance)
+
+    if hueDiff > allowedVariance then
         return true
     else
         return false
     end
 end
 
-function getHueDifference(color1, color2)
-    local hue1 = hueFromColor(color1)
-    local hue2 = hueFromColor(color2)
-    local difference = math.abs(hue1 - hue2)
-    if difference > 180 then
-        difference = 360 - difference
-    end
-    return difference
-end
+-- function getHueDifference(color1, color2)
+--     local hue1 = hueFromColor(color1)
+--     local hue2 = hueFromColor(color2)
+--     local difference = math.abs(hue1 - hue2)
+--     if difference > 180 then
+--         difference = 360 - difference
+--     end
+--     return difference
+-- end
 
 function hueFromColor(aColor)
     local r, g, b = aColor.r / 255, aColor.g / 255, aColor.b / 255

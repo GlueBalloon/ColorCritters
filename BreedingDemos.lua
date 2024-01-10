@@ -9,7 +9,7 @@ function BasicMating()
             for _, critter in ipairs(self.critters.all) do
                 critter.speed = 12
                 critter.size = 70
-                critter.mateColorVariance = 1
+                critter.mateColorVariance = 1.0
                 critter.color = color(141, 0, 255)
                 if math.random() > 0.5 then
                     critter.color = color(255, 0, 183)
@@ -195,13 +195,13 @@ function PickyBreeders()
         -- scenario-specific creature settings
         function scenarioSettings(critter)
             --size range relative to width
-            local sizeBase = math.max(WIDTH, HEIGHT) * 0.045
+            local sizeBase = math.max(WIDTH, HEIGHT) * 0.07
             critter.size = math.random(math.floor(sizeBase), math.floor(sizeBase * 2.8))
             --behaviors
             critter.speed = 27
-            critter.mateColorVariance = 0.5
-            critter.timeToFertility = math.random(60, 70)
-            critter.mortality = math.random(80, 90)
+            critter.mateColorVariance = 0.4
+            critter.timeToFertility = math.random(20, 54)
+            critter.mortality = math.random(25, 50)
             --colors
             self.backgroundColor = color(61, 39, 82)
             critter.id = "b"
@@ -217,7 +217,7 @@ function PickyBreeders()
                 chosenColor = color2
             end
             critter.color = chosenColor
-            local diff = getHueDifference(color1,  color2)
+            --local diff = getHueDifference(color1,  color2)
         end    
         -- one-time setup
         if not self.isCustomSetup then
@@ -402,9 +402,9 @@ function PopulationTiedToTickRate()
         --functions for spawning custom critters
         function newCritter(pos)
             local new = ColorCritter()
-            new.mateColorVariance = 0.01
-            new.size = math.random(2, math.ceil(math.max(WIDTH, HEIGHT) * 0.005))
-            new.speed = math.random(8, 20)
+            new.mateColorVariance = 0.06
+            new.size = math.random(3, math.ceil(math.max(WIDTH, HEIGHT) * 0.029))
+            new.speed = new.size * 0.02
             new.timeToFertility = math.random(80, 90)
             new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
             new.position = pos or new.position
@@ -446,7 +446,7 @@ function PopulationTiedToTickRate()
         self.critters.babies = {}
         self.critters.ageTable = {}
         self.randoPercent = 0.08 --not in self by default
-        self.tickRateTarget = 15 --not in self by default
+        self.tickRateTarget = 13 --not in self by default
         
         --cycle through critters
         for i, critter in ipairs(self.critters.all) do
@@ -473,6 +473,59 @@ function PopulationTiedToTickRate()
             ::nextCritter::
         end    
         
+        if false then 
+            
+            --update population tracking
+            self.popTracker:update(#self.critters.all)
+            
+            --if frame rate is too low, prevent births
+            if self.tickRate < self.tickRateTarget * 1.3 then
+                self.critters.babies = {}
+            end
+            
+            --add in any babies
+            for _, baby in ipairs(self.critters.babies) do
+                table.insert(self.critters.all, baby) 
+            end
+            
+            -- sort death table from lowest to highest
+            deaths = self.deaths
+            numDeaths = #self.deaths
+            table.sort(self.deaths)
+            
+            
+            -- Step 2: Create a new table and insert unique elements
+            local uniqueIndexes = {}
+            local prevValue
+            
+            for _, value in ipairs(self.deaths) do
+                if value ~= prevValue then
+                    table.insert(uniqueIndexes, value)
+                end
+                prevValue = value
+            end
+            
+            --clear out the dead by index and add in the newborn
+            for i=#uniqueIndexes, 1, -1 do
+                --allow for randos to add
+                if i > self.numToCull * self.randoPercent then
+                    table.remove(self.critters.all, uniqueIndexes[i])
+                end
+            end   
+            
+            popStyle()
+            
+            -- clear everything and start over if touched
+            if CurrentTouch.state == BEGAN then
+                isSetUp = false
+            end
+            
+            
+            return 
+        end
+        
+        --older more complicated frame-rate stuff:
+        
         --check tickRate to see if culling is needed
         self.tickRate=self.tickRate*.9+.1/DeltaTime
         self.popTracker:update(#self.critters.all)
@@ -483,6 +536,7 @@ function PopulationTiedToTickRate()
         tickRate = self.tickRate
         pop = #self.critters.all
         cull = self.numToCull
+        
         ages = #self.critters.ageTable
         --ageTable = self.critters.ageTable
         -- if culling is needed, use critters.ageTable to add to kill list
@@ -608,7 +662,7 @@ function GroupStreakers()
         
         local deaths = {}
         self.critters.babies = {}
-        self.oldest = {}
+        self.critters.oldest = {}
         for _, critter in ipairs(self.critters.all) do
             -- call critter's own draw function, which may return a baby
             local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)

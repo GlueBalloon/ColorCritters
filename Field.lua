@@ -84,8 +84,6 @@ Field = class()
 function Field:init(critters, bgColor)
     self.backgroundColor = bgColor or color(24, 27, 40)
     self.critters = CritterTracker(critters)
-    self.critters.ageTable = {}
-    self.oldest = {}
     self.popHistory = {}
     self.numToCull = 0
     self.isCustomSetup = false

@@ -16,15 +16,15 @@ function setup()
     demoControl.resetFunction = function()
         field:resetCritters()
     end
-    demoControl:addDemo(Stillness, "Stillness")
+    demoControl:addDemo(Immobile, "Immobile")
     demoControl:addDemo(Movers, "Movers")
     demoControl:addDemo(Streakers, "Streakers")
     demoControl:addDemo(AccidentalBlobs, "Accidental Blobs")
     demoControl:addDemo(BasicMating, "Basic Mating")
     demoControl:addDemo(JitteryBreeders, "Jittery Breeders")
-    demoControl:addDemo(PickyBreeders, "Picky Breeders")
+    demoControl:addDemo(PickyBreeders, "Narrow-range Breeders")
     demoControl:addDemo(TinyBreeders, "Tiny Breeders")
-    demoControl:addDemo(PopulationTiedToTickRate, "Population Tied To FPS")
+    demoControl:addDemo(PopulationTiedToTickRate, "Frame Rate Caps Birth Rate")
     demoControl:addDemo(GroupStreakers, "Group Streakers")
 end
 
@@ -34,8 +34,10 @@ function draw()
         --make the chooser default to the last demo
         print("not")
         local last = #demoControl.demoDrawFunctions
-        demoControl.iosSlider:setValue_(last)
-        demoControl:updateDemoAndReset(last)
+       -- demoControl.iosSlider:setValue_(last)
+        demoControl.iosSlider:setValue_(9)-- start with PopulationTiedToTickRate
+       -- demoControl:updateDemoAndReset(last)
+        demoControl:updateDemoAndReset(9)
         demoControl:draw()
         sliderSet = true
         background(0)

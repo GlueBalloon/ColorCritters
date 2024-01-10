@@ -13,7 +13,7 @@ Not in use. An early first try.
 local SCREEN_WIDTH = WIDTH
 local SCREEN_HEIGHT = HEIGHT
 local NUM_CREATURES = 180
-local MUTATION_RATE = 0.01
+local MUTATION_RATE = 0.0002
 local FIELD_COLOR = color(91, 83, 140)
 local FERTILITY_WAIT = 200
 local BODYRADIUS = 10
