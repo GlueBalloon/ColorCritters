@@ -482,7 +482,7 @@ function PopulationTiedToTickRate()
         tickRate = self.tickRate --<--for tracking in parameter pane
         
         --if rate is too low, prevent births
-        if self.tickRate < self.tickRateTarget * 1.1 then
+        if self.tickRate < self.tickRateTarget then
             self.critters.babies = {}
         end
         
