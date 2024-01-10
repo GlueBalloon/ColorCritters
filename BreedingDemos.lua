@@ -404,6 +404,7 @@ function PopulationTiedToTickRate()
             local new = ColorCritter()
             new.mateColorVariance = 0.06
             new.size = math.random(3, math.ceil(math.max(WIDTH, HEIGHT) * 0.029))
+            new.size = math.random(3, math.ceil(math.max(WIDTH, HEIGHT) * 0.021))
             new.speed = new.size * 0.02
             new.timeToFertility = math.random(80, 90)
             new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
@@ -424,9 +425,7 @@ function PopulationTiedToTickRate()
             parameter.clear()
             parameter.watch("tickRate")
             parameter.watch("pop")
-            parameter.watch("cull")
             parameter.watch("numDeaths")
-            parameter.watch("randosAdded")
         end
         
         --basic draw cycle prep
@@ -473,115 +472,36 @@ function PopulationTiedToTickRate()
             ::nextCritter::
         end    
         
-        if false then 
-            
-            --update population tracking
-            self.popTracker:update(#self.critters.all)
-            
-            --if frame rate is too low, prevent births
-            if self.tickRate < self.tickRateTarget * 1.3 then
-                self.critters.babies = {}
-            end
-            
-            --add in any babies
-            for _, baby in ipairs(self.critters.babies) do
-                table.insert(self.critters.all, baby) 
-            end
-            
-            -- sort death table from lowest to highest
-            deaths = self.deaths
-            numDeaths = #self.deaths
-            table.sort(self.deaths)
-            
-            
-            -- Step 2: Create a new table and insert unique elements
-            local uniqueIndexes = {}
-            local prevValue
-            
-            for _, value in ipairs(self.deaths) do
-                if value ~= prevValue then
-                    table.insert(uniqueIndexes, value)
-                end
-                prevValue = value
-            end
-            
-            --clear out the dead by index and add in the newborn
-            for i=#uniqueIndexes, 1, -1 do
-                --allow for randos to add
-                if i > self.numToCull * self.randoPercent then
-                    table.remove(self.critters.all, uniqueIndexes[i])
-                end
-            end   
-            
-            popStyle()
-            
-            -- clear everything and start over if touched
-            if CurrentTouch.state == BEGAN then
-                isSetUp = false
-            end
-            
-            
-            return 
-        end
         
-        --older more complicated frame-rate stuff:
-        
-        --check tickRate to see if culling is needed
-        self.tickRate=self.tickRate*.9+.1/DeltaTime
+        --update population tracking
         self.popTracker:update(#self.critters.all)
-        local tickRateTargetTweaked = self.tickRateTarget * 1.3
-        self.numToCull = self.popTracker:amountOverTarget(#self.critters.all, self.tickRate, tickRateTargetTweaked, 10000)
-        --add a little extra to numToCull if not zero, for random replacements
-        self.numToCull = math.ceil(self.numToCull * (1 + self.randoPercent))
-        tickRate = self.tickRate
         pop = #self.critters.all
-        cull = self.numToCull
         
-        ages = #self.critters.ageTable
-        --ageTable = self.critters.ageTable
-        -- if culling is needed, use critters.ageTable to add to kill list
-        if self.numToCull > 0 then
-            
-            local culledCount = 0
-            
-            for age = #self.critters.ageTable, 1, -1 do
-                local crittersAtAge = self.critters.ageTable[age]
-                if crittersAtAge then
-                    for i, indexTable in ipairs(crittersAtAge) do
-                        local critter = indexTable.critter
-                        if critter.alive then
-                            critter.alive = false                        
-                            table.insert(self.deaths, indexTable.index)  
-                            culledCount = culledCount + 1 
-                            if culledCount >= self.numToCull then
-                                break
-                            end
-                        end
-                    end
-                end
-                if culledCount >= self.numToCull then
-                    break
-                end
-            end       
-            
+        --check tickRate
+        self.tickRate=self.tickRate*.9+.1/DeltaTime
+        tickRate = self.tickRate --<--for tracking in parameter pane
+        
+        --if rate is too low, prevent births
+        if self.tickRate < self.tickRateTarget * 1.1 then
+            self.critters.babies = {}
         end
-
-        -- sort death table from lowest to highest
-        deaths = self.deaths
-        numDeaths = #self.deaths
+        
+        --add in any babies
+        for _, baby in ipairs(self.critters.babies) do
+            table.insert(self.critters.all, baby) 
+        end
+        
+        -- remove duplicate death entries to create uniqueIndexes
         table.sort(self.deaths)
-        
-        
-        -- Step 2: Create a new table and insert unique elements
         local uniqueIndexes = {}
         local prevValue
-        
         for _, value in ipairs(self.deaths) do
             if value ~= prevValue then
                 table.insert(uniqueIndexes, value)
             end
             prevValue = value
         end
+        numDeaths = #uniqueIndexes
         
         --clear out the dead by index and add in the newborn
         for i=#uniqueIndexes, 1, -1 do
@@ -590,22 +510,6 @@ function PopulationTiedToTickRate()
                 table.remove(self.critters.all, uniqueIndexes[i])
             end
         end   
-
-        for _, baby in ipairs(self.critters.babies) do
-            table.insert(self.critters.all, baby)
-        end
-        
-        --if some were culled, add in some new random creatures
-        --(prevents entire domination by one color)
-        if #uniqueIndexes > 0 then
-            local randosToAdd = math.floor(self.numToCull * self.randoPercent)
-            self:removeRandomCritters(randosToAdd)
-            randosAdded = 0
-            for i=1, randosToAdd do
-                newCritter()
-                randosAdded = randosAdded + 1
-            end
-        end
         
         popStyle()
         
@@ -613,7 +517,7 @@ function PopulationTiedToTickRate()
         if CurrentTouch.state == BEGAN then
             isSetUp = false
         end
-        
+    
     end
     field:draw()
 end
