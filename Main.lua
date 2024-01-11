@@ -32,12 +32,13 @@ function draw()
 
     if demoControl.iosSlider and not sliderSet then
         --make the chooser default to the last demo
-        print("not")
+        print("not defaulting to last demo yet")
+        local startDemo = 9
         local last = #demoControl.demoDrawFunctions
        -- demoControl.iosSlider:setValue_(last)
-        demoControl.iosSlider:setValue_(7)-- start with PopulationTiedToTickRate
+        demoControl.iosSlider:setValue_(startDemo)-- start with PopulationTiedToTickRate
        -- demoControl:updateDemoAndReset(last)
-        demoControl:updateDemoAndReset(7)
+        demoControl:updateDemoAndReset(startDemo)
         demoControl:draw()
         sliderSet = true
         background(0)

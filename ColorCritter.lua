@@ -6,6 +6,7 @@ function ColorCritter:init(size, speed, strength, aColor,
     self.size = size
     self.speed = speed
     self.color = aColor
+    --NOTE: sensory ranges around 3 may detect own anti-aliased pixels
     self.sensoryRange = {min = 5, max = 7}
     self:addPropertiesToBeRefactored(strength, aggression, position, direction, timeToFertility, mateColorVariance, mortality)
 end
