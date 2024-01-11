@@ -195,13 +195,13 @@ function PickyBreeders()
         -- scenario-specific creature settings
         function scenarioSettings(critter)
             --size range relative to width
-            local sizeBase = math.max(WIDTH, HEIGHT) * 0.07
+            local sizeBase = math.max(WIDTH, HEIGHT) * 0.04
             critter.size = math.random(math.floor(sizeBase), math.floor(sizeBase * 2.8))
             --behaviors
-            critter.speed = 27
-            critter.mateColorVariance = 0.4
-            critter.timeToFertility = math.random(20, 54)
-            critter.mortality = math.random(25, 50)
+            critter.speed = 15
+            critter.mateColorVariance = 0.09
+            critter.timeToFertility = math.random(10, 24)
+            critter.mortality = math.random(25, 40)
             --colors
             self.backgroundColor = color(61, 39, 82)
             critter.id = "b"
@@ -265,13 +265,15 @@ function PickyBreeders()
             ::next::
         end
         
-        for _, baby in ipairs(babies) do
-            table.insert(self.critters.all, baby)
+        if not blueGone and not yellowGone then
+            for _, baby in ipairs(babies) do
+                table.insert(self.critters.all, baby)
+            end
+            for index=#deaths, 1, -1 do
+                table.remove(self.critters.all, index)
+            end
         end
-        for index=#deaths, 1, -1 do
-            table.remove(self.critters.all, index)
-        end
-        
+            
         if showBufferThumbnail then
             pushStyle()
             rectMode(CORNER)
@@ -291,7 +293,7 @@ function PickyBreeders()
         text(generations, 98, 90)
         
         -- Check if either blue or yellow is zero, and show a message if necessary
-        local blueGone, yellowGone = blueCritterCount == 0, yellowCritterCount == 0
+        blueGone, yellowGone = blueCritterCount == 0, yellowCritterCount == 0
         if blueGone or yellowGone then
             font("SourceSansPro-Bold")
             adjustFontSize("There are no more yellow critters", WIDTH * 0.9)
@@ -309,6 +311,11 @@ function PickyBreeders()
                 text("Press reset to start again", WIDTH/2, HEIGHT/2)
             end
         end
+        
+        --short-circuit population booms
+        if #self.critters.all > 2000 then
+            self.isCustomSetup = false
+        end
     end
     field:draw()
 end
@@ -319,15 +326,16 @@ function TinyBreeders()
         function newCritter(pos)
             local new = ColorCritter()
             new.size = math.random(5, 8)
-            new.speed = math.random(5, 18)
+            new.speed = math.random(8, 18)
             new.timeToFertility = math.random(60, 110)
+            new.mateColorVariance = 0.6
             new.mortality = new.timeToFertility * math.random(40, 50) * 0.1
             new.position = pos or new.position
-            table.insert(field.critters.all, new)
+            table.insert(self.critters.all, new)
         end
         function respawn()
             local startingPop = math.max(WIDTH, HEIGHT) * 0.2
-            field.critters.all = {}
+            self.critters.all = {}
             for i = 1, startingPop do
                 newCritter()
             end
@@ -348,6 +356,7 @@ function TinyBreeders()
             
             -- call critter's own draw function, which may return a baby
             local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
+
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
@@ -355,7 +364,7 @@ function TinyBreeders()
             end
             -- if creature has died, add index to the death table
             if critter.alive == false then
-                table.insert(deaths, i)
+                table.insert(deaths, critter)
             end
             
         end
@@ -397,16 +406,41 @@ end
 
 --when tickRate drops too low, oldest critters get removed
 function PopulationTiedToTickRate()
+    --choose from three slightly different critter settings
+    local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange
+    local behaviorSetting = math.random(3)
+    if behaviorSetting == 1 then
+        --note: this range makes critters asexually reproduce
+        --essentially mating with their own anti-aliasing pixels
+        sensoryRange = {min = 1, max = 3}
+        matingVariance = 0.19
+        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.029)}
+        speedFactor = 0.015
+        fertilityRange = {min = 80, max = 90}
+    elseif behaviorSetting == 2 then
+        sensoryRange = {min = 5, max = 7}
+        matingVariance = 0.25
+        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.033)}
+        speedFactor = 0.04
+        fertilityRange = {min = 100, max = 120}
+    else
+        sensoryRange = {min = 5, max = 7}
+        matingVariance = 0.37
+        sizeRange = {min = 2, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.024)}
+        speedFactor = 0.027
+        fertilityRange = {min = 120, max = 140}
+    end
     function Field:draw()
 
         --functions for spawning custom critters
         function newCritter(pos)
+            --NOTE:
             local new = ColorCritter()
-            new.mateColorVariance = 0.06
-            new.size = math.random(3, math.ceil(math.max(WIDTH, HEIGHT) * 0.029))
-            new.size = math.random(3, math.ceil(math.max(WIDTH, HEIGHT) * 0.021))
-            new.speed = new.size * 0.02
-            new.timeToFertility = math.random(80, 90)
+            new.sensoryRange = sensoryRange
+            new.mateColorVariance = matingVariance
+            new.size = math.random(sizeRange.min, sizeRange.max)
+            new.speed = new.size * speedFactor
+            new.timeToFertility = math.random(fertilityRange.min, fertilityRange.max)
             new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
             new.position = pos or new.position
             table.insert(field.critters.all, new)
@@ -420,7 +454,10 @@ function PopulationTiedToTickRate()
         end
         if not self.isCustomSetup then
             self.isCustomSetup = true
+            self.backgroundColor = color(36, 44, 59)
+            self.backgroundColor = color(52, 36, 59)
             self.backgroundColor = color(16, 21, 16)
+            
             respawn()
             parameter.clear()
             parameter.watch("tickRate")
@@ -503,7 +540,7 @@ function PopulationTiedToTickRate()
         end
         numDeaths = #uniqueIndexes
         
-        --clear out the dead by index and add in the newborn
+        --clear out the dead by index
         for i=#uniqueIndexes, 1, -1 do
             --allow for randos to add
             if i > self.numToCull * self.randoPercent then

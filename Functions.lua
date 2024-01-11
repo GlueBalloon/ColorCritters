@@ -114,8 +114,8 @@ end
 
 -- Define color categories and their hue ranges
 local colorCategories = {
-    {name = "RedOrange", hueRange = {0.00, 0.14}, weightedHueRange = {0.00, 0.21}},
-    {name = "Yellow", hueRange = {0.14, 0.17}, weightedHueRange = {0.21, 0.26}},
+    {name = "RedOrange", hueRange = {0.00, 0.14}, weightedHueRange = {0.00, 0.25}},
+    {name = "Yellow", hueRange = {0.14, 0.17}, weightedHueRange = {0.25, 0.26}},
     {name = "Green", hueRange = {0.17, 0.46}, weightedHueRange = {0.26, 0.32}},
     {name = "Blue", hueRange = {0.46, 0.71}, weightedHueRange = {0.32, 0.62}},
     {name = "Purple", hueRange = {0.71, 0.81}, weightedHueRange = {0.62, 0.79}},

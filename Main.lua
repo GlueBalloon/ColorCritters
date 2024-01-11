@@ -35,9 +35,9 @@ function draw()
         print("not")
         local last = #demoControl.demoDrawFunctions
        -- demoControl.iosSlider:setValue_(last)
-        demoControl.iosSlider:setValue_(9)-- start with PopulationTiedToTickRate
+        demoControl.iosSlider:setValue_(7)-- start with PopulationTiedToTickRate
        -- demoControl:updateDemoAndReset(last)
-        demoControl:updateDemoAndReset(9)
+        demoControl:updateDemoAndReset(7)
         demoControl:draw()
         sliderSet = true
         background(0)

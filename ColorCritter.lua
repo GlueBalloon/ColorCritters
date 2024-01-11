@@ -6,6 +6,7 @@ function ColorCritter:init(size, speed, strength, aColor,
     self.size = size
     self.speed = speed
     self.color = aColor
+    self.sensoryRange = {min = 5, max = 7}
     self:addPropertiesToBeRefactored(strength, aggression, position, direction, timeToFertility, mateColorVariance, mortality)
 end
 
@@ -41,17 +42,15 @@ function ColorCritter:update(backgroundImage, backgroundColor)
 end
 
 function ColorCritter:draw(backgroundImage, backgroundColor)
-    -- don't draw if dead! lol
-    if self.alive == false then return end
     -- update self (may return baby)
     local babyMaybe = self:update(backgroundImage, backgroundColor)
-    -- draw self if still alive
+    -- draw self
+    fill(self.color)
+    ellipse(self.position.x, self.position.y, self.size)  
     if self.alive then
-        fill(self.color)
-        ellipse(self.position.x, self.position.y, self.size)  
+        -- return possible baby
+        return babyMaybe
     end
-    -- return possible baby
-    return babyMaybe
 end
 
 function ColorCritter:moveBreedDie(backgroundImage, backgroundColor)
@@ -141,7 +140,8 @@ function ColorCritter:ageAndCheckMortality()
 end
 
 function ColorCritter:pointOutsideSelf()
-    local center, radius = self.position, (self.size / 2) + math.random(5)
+    local randomDist = math.random(self.sensoryRange.min, self.sensoryRange.max)
+    local center, radius = self.position, (self.size / 2) + randomDist
     local angle = math.random() * math.pi * 2
     local x = center.x + radius * math.cos(angle)
     local y = center.y + radius * math.sin(angle)
