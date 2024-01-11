@@ -410,7 +410,7 @@ function PopulationTiedToTickRate()
     local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange
     local behaviorSetting = math.random(3)
     if behaviorSetting == 1 then
-        --note: this range makes critters asexually reproduce
+        --note: a range of 1 lets critters asexually reproduce
         --essentially mating with their own anti-aliasing pixels
         sensoryRange = {min = 1, max = 3}
         matingVariance = 0.19
@@ -418,11 +418,13 @@ function PopulationTiedToTickRate()
         speedFactor = 0.015
         fertilityRange = {min = 80, max = 90}
     elseif behaviorSetting == 2 then
-        sensoryRange = {min = 5, max = 7}
-        matingVariance = 0.25
-        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.033)}
-        speedFactor = 0.04
-        fertilityRange = {min = 100, max = 120}
+        --note: q range of 1 lets critters asexually reproduce
+        --essentially mating with their own anti-aliasing pixels
+        sensoryRange = {min = 1, max = 3}
+        matingVariance = 0.05
+        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.04)}
+        speedFactor = 0.02
+        fertilityRange = {min = 80, max = 90}
     else
         sensoryRange = {min = 5, max = 7}
         matingVariance = 0.37
