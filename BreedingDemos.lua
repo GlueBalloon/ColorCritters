@@ -325,6 +325,7 @@ function TinyBreeders()
     function Field:draw()
         function newCritter(pos)
             local new = ColorCritter()
+            new.sensoryRange = {min = 1, max = 3}
             new.size = math.random(5, 8)
             new.speed = math.random(8, 18)
             new.timeToFertility = math.random(60, 110)
@@ -407,7 +408,8 @@ end
 --when tickRate drops too low, oldest critters get removed
 function PopulationTiedToTickRate()
     --choose from three slightly different critter settings
-    local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange
+    local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange,
+        mortality
     local behaviorSetting = math.random(3)
     if behaviorSetting == 1 then
         --note: a range of 1 lets critters asexually reproduce
@@ -430,9 +432,51 @@ function PopulationTiedToTickRate()
         matingVariance = 0.37
         sizeRange = {min = 2, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.024)}
         speedFactor = 0.027
-        fertilityRange = {min = 120, max = 140}
+        fertilityRange = {min = 60, max = 90}
+        math.random(90, 120)
     end
+
     function Field:draw()
+        --basic draw cycle prep
+        pushStyle()
+        noStroke()
+        self:drawAndSwapBuffer()
+        --self.drawer:drawBuffer()
+        --self.drawer:swapBuffer()
+        
+        if cycleBackgroundColors then
+            -- Initialize variables
+            local countUntilStarting = 3
+            local rateOfChange = 0.05
+
+            -- Update the time
+            self.time = self.time + DeltaTime
+
+            -- Check if the delay period has passed
+            if self.time > countUntilStarting then
+
+                -- Start the color change
+                if not self.colorChangeStarted then
+                    -- Calculate the offset based on the current background color
+                    self.rOffset = math.asin((self.backgroundColor.r - 128) / 127)
+                    self.gOffset = math.asin((self.backgroundColor.g - 128) / 127)
+                    self.bOffset = math.asin((self.backgroundColor.b - 128) / 127)
+
+                    -- Mark the color change as started
+                    self.colorChangeStarted = true
+                end
+
+                -- Calculate the time since the color change started
+                local adjustedTime = self.time - countUntilStarting
+
+                -- Calculate the new background color using the offset
+                local r = math.sin(adjustedTime * rateOfChange + self.rOffset) * 127 + 128
+                local g = math.sin(adjustedTime * rateOfChange * 2 + self.gOffset) * 127 + 128
+                local b = math.sin(adjustedTime * rateOfChange * 3 + self.bOffset) * 127 + 128
+               -- self.backgroundColor = color(r, g, b)
+            end
+        end
+
 
         --functions for spawning custom critters
         function newCritter(pos)
@@ -445,6 +489,7 @@ function PopulationTiedToTickRate()
             new.timeToFertility = math.random(fertilityRange.min, fertilityRange.max)
             new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
             new.position = pos or new.position
+            new.mortality = mortality or new.mortality
             table.insert(field.critters.all, new)
         end
         function respawn()
@@ -458,13 +503,17 @@ function PopulationTiedToTickRate()
             self.isCustomSetup = true
             self.backgroundColor = color(36, 44, 59)
             self.backgroundColor = color(52, 36, 59)
-            self.backgroundColor = color(16, 21, 16)
+            self.backgroundColor = color(93, 96, 32)
             
             respawn()
             parameter.clear()
             parameter.watch("tickRate")
             parameter.watch("pop")
             parameter.watch("numDeaths")
+            parameter.watch("#field.critters.babies")
+            parameter.watch("averageCritterSize")
+            parameter.watch("medianCritterSize")
+            parameter.boolean("cycleBackgroundColors", false)
         end
         
         --basic draw cycle prep
@@ -529,27 +578,36 @@ function PopulationTiedToTickRate()
         for _, baby in ipairs(self.critters.babies) do
             table.insert(self.critters.all, baby) 
         end
-        
-        -- remove duplicate death entries to create uniqueIndexes
-        table.sort(self.deaths)
-        local uniqueIndexes = {}
-        local prevValue
-        for _, value in ipairs(self.deaths) do
-            if value ~= prevValue then
-                table.insert(uniqueIndexes, value)
+
+        -- count backwards through critters and remove any with alive = false
+        numDeaths = 0
+        for i = #self.critters.all, 1, -1 do
+            if self.critters.all[i].alive == false then
+                table.remove(self.critters.all, i)
+                numDeaths = numDeaths + 1
             end
-            prevValue = value
         end
-        numDeaths = #uniqueIndexes
-        
-        --clear out the dead by index
-        for i=#uniqueIndexes, 1, -1 do
-            --allow for randos to add
-            if i > self.numToCull * self.randoPercent then
-                table.remove(self.critters.all, uniqueIndexes[i])
-            end
-        end   
-        
+
+        --average the size of all critters
+        local totalSize = 0
+        for _, critter in ipairs(self.critters.all) do
+            totalSize = totalSize + critter.size
+        end
+        averageCritterSize = totalSize / #self.critters.all
+
+        --get median and average size of all critters
+        local sizes = {}
+        for _, critter in ipairs(self.critters.all) do
+            table.insert(sizes, critter.size)
+        end
+        table.sort(sizes)
+        medianCritterSize = sizes[math.ceil(#sizes/2)]
+        averageCritterSize = 0
+        for _, size in ipairs(sizes) do
+            averageCritterSize = averageCritterSize + size
+        end
+        averageCritterSize = averageCritterSize / #sizes
+
         popStyle()
         
         -- clear everything and start over if touched
@@ -561,86 +619,3 @@ function PopulationTiedToTickRate()
     field:draw()
 end
 
-
---just like the streakers demo except the critters multiply
-function GroupStreakers()
-
-    function Field:draw()
-        
-        function newCritter(pos)
-            local new = ColorCritter()
-            new.mateColorVariance = 0.3
-            new.size = math.random(10, 42)
-            new.speed = math.random(1, 9)
-            new.timeToFertility = math.random(20, 80)
-            new.mortality = new.timeToFertility * math.random(11, 50) * 0.1
-            new.position = pos or new.position
-            table.insert(field.critters.all, new)
-        end
-        function respawn()
-            field.critters.all = {}
-            for i = 1, 100 do
-                newCritter()
-            end
-        end
-        if not self.isCustomSetup then
-            self.isCustomSetup = true
-            self.backgroundColor = color(43, 26, 25)
-            respawn()
-            backgroundBlankImage = image(WIDTH,HEIGHT)
-            backgroundClearCounter = 0
-        end
-        if #self.critters.all > 2000 then
-            respawn()
-        end
-        
-        -- apparently without this kludge I can't truly clear the screen after other demos
-        if backgroundClearCounter and backgroundClearCounter < 4 then
-            print("noo")
-            background(self.backgroundColor)
-            self:drawAndSwapBuffer()
-            sprite(backgroundBlankImage)
-            backgroundClearCounter = backgroundClearCounter + 1
-        end
-        
-        local deaths = {}
-        self.critters.babies = {}
-        self.critters.oldest = {}
-        for _, critter in ipairs(self.critters.all) do
-            -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
-            -- if it did return a baby, tag it and store it
-            if babyMaybe ~= nil then
-                babyMaybe.id = critter.id
-                table.insert(self.critters.babies, babyMaybe)
-            end
-            -- if creature has died, add index to the death table
-            if critter.alive == false then
-                table.insert(deaths, i)
-            end
-        end
-        
-        for i, index in ipairs(deaths) do
-            table.remove(self.critters.all, index)
-        end
-        
-        for _, baby in ipairs(self.critters.babies) do
-            table.insert(self.critters.all, baby)
-        end
-        
-        self.tickRate=self.tickRate*.9+.1/DeltaTime
-        self.popTracker:update(#self.critters.all)
-        local popAdjustment = self.popTracker:amountOverTarget(#self.critters.all, self.tickRate, 30, 2000)
-        self:removeRandomCritters(popAdjustment)
-        
-        
-        if CurrentTouch.state == BEGAN then
-            for i, critter in pairs(self.critters.all) do
-                critter.direction = vec2(math.random()-0.5, math.random()-0.5):normalize()
-            end
-        end
-        
-        popStyle()
-    end
-    field:draw()
-end

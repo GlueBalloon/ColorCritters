@@ -23,6 +23,18 @@ function FieldDrawer:drawAndSwapBuffer(field)
     setContext(self.buffer)
 end
 
+function FieldDrawer:drawBuffer()
+    setContext()
+    background(self.field and self.field.backgroundColor or color(82, 128, 142))
+    sprite(self.buffer, WIDTH/2, HEIGHT/2)
+end
+
+function FieldDrawer:swapBuffer()
+    self.lastBuffer = self.buffer
+    self.buffer = image(WIDTH, HEIGHT)
+    setContext(self.buffer)
+    collectgarbage()
+end
 
 
 
@@ -82,7 +94,8 @@ end
 Field = class()
 
 function Field:init(critters, bgColor)
-    self.backgroundColor = bgColor or color(24, 27, 40)
+    self.time = 0
+    self.backgroundColor = bgColor or color(63, 95, 233)
     self.critters = CritterTracker(critters)
     self.popHistory = {}
     self.numToCull = 0
@@ -137,4 +150,8 @@ function Field:removeRandomCritters(adjustment)
         local value = table.remove(self.critters.all, index)
         adjustment = adjustment - 1
     end
+end
+
+function Field:setContextToBuffer()
+    self.drawer:setContextToBuffer()
 end
