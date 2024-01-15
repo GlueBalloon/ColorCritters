@@ -4,21 +4,21 @@ FieldDrawer = class()
 function FieldDrawer:init(field)
     self.field = field
     self.buffer = image(WIDTH, HEIGHT)
+    setContext(self.buffer)
+    background(field.backgroundColor)
     self.lastBuffer = self.buffer
 end
 
 function FieldDrawer:drawAndSwapBuffer(field)
-    local field = field or self.field
+    --on entering, context should be buffer already
     collectgarbage()
-    if not self.buffer then
-        self.buffer = image(WIDTH, HEIGHT)
-        setContext(self.buffer)
-        background(field.backgroundColor)
-        self.lastBuffer = self.buffer
-    end
-    setContext()
+    local field = field or self.field
+    --capture previous buffer
     self.lastBuffer = self.buffer
+    --draw current buffer to screen
+    setContext()
     sprite(self.buffer, WIDTH/2, HEIGHT/2)
+    --set context to new blank buffer 
     self.buffer = image(WIDTH, HEIGHT)
     setContext(self.buffer)
 end
