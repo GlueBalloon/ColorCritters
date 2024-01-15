@@ -403,11 +403,10 @@ function TinyBreeders()
     field:draw()
 end
 
-
+--when tickRate drops too low, oldest critters get removed
 function PopulationTiedToTickRate()
     --choose from three slightly different critter settings
-    local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange,
-    mortality
+    local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange
     local behaviorSetting = math.random(3)
     if behaviorSetting == 1 then
         --note: a range of 1 lets critters asexually reproduce
@@ -430,17 +429,9 @@ function PopulationTiedToTickRate()
         matingVariance = 0.37
         sizeRange = {min = 2, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.024)}
         speedFactor = 0.027
-        fertilityRange = {min = 60, max = 90}
-        math.random(90, 120)
+        fertilityRange = {min = 120, max = 140}
     end
-    
     function Field:draw()
-        --basic draw cycle prep
-        pushStyle()
-        noStroke()
-        self:drawAndSwapBuffer()
-        --self.drawer:drawBuffer()
-        --self.drawer:swapBuffer()
         
         if cycleBackgroundColors then
             -- Initialize variables
@@ -474,8 +465,7 @@ function PopulationTiedToTickRate()
                 -- self.backgroundColor = color(r, g, b)
             end
         end
-        
-        
+
         --functions for spawning custom critters
         function newCritter(pos)
             --NOTE:
@@ -487,7 +477,6 @@ function PopulationTiedToTickRate()
             new.timeToFertility = math.random(fertilityRange.min, fertilityRange.max)
             new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
             new.position = pos or new.position
-            new.mortality = mortality or new.mortality
             table.insert(field.critters.all, new)
         end
         function respawn()
@@ -501,7 +490,7 @@ function PopulationTiedToTickRate()
             self.isCustomSetup = true
             self.backgroundColor = color(36, 44, 59)
             self.backgroundColor = color(52, 36, 59)
-            self.backgroundColor = color(93, 96, 32)
+            self.backgroundColor = color(16, 21, 16)
             
             respawn()
             parameter.clear()
@@ -570,13 +559,13 @@ function PopulationTiedToTickRate()
         --if rate is too low, prevent births
         if self.tickRate < self.tickRateTarget then
             self.critters.babies = {}
+        else
+            --otherwise add in any babies
+            for _, baby in ipairs(self.critters.babies) do
+                table.insert(self.critters.all, baby) 
+            end
         end
-        
-        --add in any babies
-        for _, baby in ipairs(self.critters.babies) do
-            table.insert(self.critters.all, baby) 
-        end
-        
+            
         -- count backwards through critters and remove any with alive = false
         numDeaths = 0
         for i = #self.critters.all, 1, -1 do
@@ -585,7 +574,7 @@ function PopulationTiedToTickRate()
                 numDeaths = numDeaths + 1
             end
         end
-        
+
         --average the size of all critters
         local totalSize = 0
         for _, critter in ipairs(self.critters.all) do
@@ -612,160 +601,6 @@ function PopulationTiedToTickRate()
         if CurrentTouch.state == BEGAN then
             isSetUp = false
         end
-        
-    end
-    field:draw()
-end
-
-
-
---when tickRate drops too low, oldest critters get removed
-function PopulationTiedToTickRate()
-    --choose from three slightly different critter settings
-    local sensoryRange, matingVariance, sizeRange, speedFactor, fertilityRange
-    local behaviorSetting = math.random(3)
-    if behaviorSetting == 1 then
-        --note: a range of 1 lets critters asexually reproduce
-        --essentially mating with their own anti-aliasing pixels
-        sensoryRange = {min = 1, max = 3}
-        matingVariance = 0.19
-        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.029)}
-        speedFactor = 0.015
-        fertilityRange = {min = 80, max = 90}
-    elseif behaviorSetting == 2 then
-        --note: q range of 1 lets critters asexually reproduce
-        --essentially mating with their own anti-aliasing pixels
-        sensoryRange = {min = 1, max = 3}
-        matingVariance = 0.05
-        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.04)}
-        speedFactor = 0.02
-        fertilityRange = {min = 80, max = 90}
-    else
-        sensoryRange = {min = 5, max = 7}
-        matingVariance = 0.37
-        sizeRange = {min = 2, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.024)}
-        speedFactor = 0.027
-        fertilityRange = {min = 120, max = 140}
-    end
-    function Field:draw()
-
-        --functions for spawning custom critters
-        function newCritter(pos)
-            --NOTE:
-            local new = ColorCritter()
-            new.sensoryRange = sensoryRange
-            new.mateColorVariance = matingVariance
-            new.size = math.random(sizeRange.min, sizeRange.max)
-            new.speed = new.size * speedFactor
-            new.timeToFertility = math.random(fertilityRange.min, fertilityRange.max)
-            new.mortality = new.timeToFertility * math.random(11, 180) * 0.1
-            new.position = pos or new.position
-            table.insert(field.critters.all, new)
-        end
-        function respawn()
-            local startingPop = math.max(WIDTH, HEIGHT) * 0.2
-            field.critters.all = {}
-            for i = 1, 100 do
-                newCritter()
-            end
-        end
-        if not self.isCustomSetup then
-            self.isCustomSetup = true
-            self.backgroundColor = color(36, 44, 59)
-            self.backgroundColor = color(52, 36, 59)
-            self.backgroundColor = color(16, 21, 16)
-            
-            respawn()
-            parameter.clear()
-            parameter.watch("tickRate")
-            parameter.watch("pop")
-            parameter.watch("numDeaths")
-        end
-        
-        --basic draw cycle prep
-        pushStyle()
-        noStroke()
-        
-        self:drawAndSwapBuffer()   
-        
-        --draw to buffer
-        setContext(self.drawer.buffer)
-        
-        --clear screen
-        background(self.backgroundColor)   
-        
-        --reset deaths, babies, and age tables
-        self.deaths = {}
-        self.critters.babies = {}
-        self.critters.ageTable = {}
-        self.randoPercent = 0.08 --not in self by default
-        self.tickRateTarget = 13 --not in self by default
-        
-        --cycle through critters
-        for i, critter in ipairs(self.critters.all) do
-            -- if critter has died, collect index and skip loop
-            if critter.alive == false then
-                table.insert(self.deaths, i)
-                goto nextCritter
-            end
-            -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
-            -- if it did return a baby, store it
-            if babyMaybe ~= nil then
-                table.insert(self.critters.babies, babyMaybe)
-            end
-            -- place in critters.ageTable if needed
-            if self.numToCull > 0 then
-                local age = critter.age
-                if not self.critters.ageTable[age] then
-                    self.critters.ageTable[age] = {}
-                end
-                local indexTable = {critter=critter, index=i}
-                table.insert(self.critters.ageTable[age], indexTable)
-            end
-            ::nextCritter::
-        end    
-        
-        
-        --update population tracking
-        self.popTracker:update(#self.critters.all)
-        pop = #self.critters.all
-        
-        --check tickRate
-        self.tickRate=self.tickRate*.9+.1/DeltaTime
-        tickRate = self.tickRate --<--for tracking in parameter pane
-        
-        --if rate is too low, prevent births
-        if self.tickRate < self.tickRateTarget then
-            self.critters.babies = {}
-        end
-        
-        --add in any babies
-        for _, baby in ipairs(self.critters.babies) do
-            table.insert(self.critters.all, baby) 
-        end
-        
-        -- remove duplicate death entries to create uniqueIndexes
-        table.sort(self.deaths)
-        local uniqueIndexes = {}
-        local prevValue
-        for _, value in ipairs(self.deaths) do
-            if value ~= prevValue then
-                table.insert(uniqueIndexes, value)
-            end
-            prevValue = value
-        end
-        numDeaths = #uniqueIndexes
-        
-        --clear out the dead by index
-        for i=#uniqueIndexes, 1, -1 do
-            --allow for randos to add
-            if i > self.numToCull * self.randoPercent then
-                table.remove(self.critters.all, uniqueIndexes[i])
-            end
-        end   
-        
-        popStyle()
         
         -- clear everything and start over if touched
         if CurrentTouch.state == BEGAN then
