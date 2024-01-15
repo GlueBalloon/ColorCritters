@@ -3,6 +3,8 @@ ColorCritter = class()
 function ColorCritter:init(size, speed, strength, aColor, 
     aggression, position, direction, timeToFertility, 
     mateColorVariance, mortality)
+    local size = size or math.min(WIDTH, HEIGHT) * 0.03
+    self.currentSize = size * 0.1 -- Start with 10% of the final size for birth animation
     self.size = size
     self.speed = speed
     self.color = aColor
@@ -38,6 +40,15 @@ function ColorCritter:update(backgroundImage, backgroundColor)
     local move, breed, die = self:moveBreedDie(backgroundImage, backgroundColor)
     -- update position
     self.position = move
+    -- Handle birth and death animations
+    if self.currentSize < self.size and not self.isDying then
+        self.currentSize = math.min(self.size, self.currentSize + (self.size * 0.05)) -- Grow by 5% of the final size each frame
+    elseif self.isDying then
+        self.currentSize = math.max(0, self.currentSize - (self.size * 0.2)) -- Shrink by 20% of the final size each frame
+        if self.currentSize <= 0 then
+            self.alive = false -- Critter disappears
+        end
+    end
     --return child if any
     return breed
 end
@@ -46,8 +57,10 @@ function ColorCritter:draw(backgroundImage, backgroundColor)
     -- update self (may return baby)
     local babyMaybe = self:update(backgroundImage, backgroundColor)
     -- draw self
+    -- fill(self.color)
+    -- ellipse(self.position.x, self.position.y, self.size)  
     fill(self.color)
-    ellipse(self.position.x, self.position.y, self.size)  
+    ellipse(self.position.x, self.position.y, self.currentSize) -- Use currentSize
     if self.alive then
         -- return possible baby
         return babyMaybe
@@ -77,7 +90,7 @@ function ColorCritter:checkForReproduction(pointColor)
     if self.fertilityCounter >= self.timeToFertility then
         --check if mate's color is within mateColorVariance
         local incompatible = colorsExceedVariance(self.color, pointColor, 
-            self.mateColorVariance)
+        self.mateColorVariance)
         if not incompatible then
             --if all is good, birth a child and return it
             return self:reproduce(pointColor)
@@ -140,6 +153,21 @@ function ColorCritter:ageAndCheckMortality()
     return true
 end
 
+function ColorCritter:ageAndCheckMortality()
+    self.age = self.age + 1
+    self.fertilityCounter = self.fertilityCounter + 1
+    
+    if self.age >= self.mortality - 5 then  -- Start shrinking 5 updates before mortality
+        self.isDying = true
+    end
+    
+    if self.age >= self.mortality then
+        return false  -- Critter dies
+    end
+    return true
+end
+
+
 function ColorCritter:pointOutsideSelf()
     local randomDist = math.random(self.sensoryRange.min, self.sensoryRange.max)
     local center, radius = self.position, (self.size / 2) + randomDist
@@ -157,19 +185,20 @@ function ColorCritter:reproduce(mateColor)
     
     local mateColor = mateColor or self.color
     local babyColor = randomColorAvoidingMuddinessBetween(self.color, mateColor)
-
+    
     -- Create a new critter with the same properties
     local baby = ColorCritter(
-        self.size, self.speed, self.strength, 
-        babyColor, self.aggression, self.position, self.direction, 
-        self.timeToFertility, self.mateColorVariance, 
-        self.mortality
+    self.size, self.speed, self.strength, 
+    babyColor, self.aggression, self.position, self.direction, 
+    self.timeToFertility, self.mateColorVariance, 
+    self.mortality
     )
-
+    
     -- Apply mutations if they occur
     if math.random() < self.mutationRate then
         local ogColor = baby.color
-        baby.color = randomColorAvoidingMuddinessBetween(baby.color, mateColor)
+        local spontaneousVariation = randomColor()
+        baby.color = randomColorAvoidingMuddinessBetween(baby.color, spontaneousVariation)
         printRarely("(printRarely) mutation at "..tostring(self.position)..
         "\n  - color: "..tostring(ogColor).. "\n  - to color: "..tostring(baby.color))
         baby.speed = math.max(0.1, math.min(40, self.speed + math.random(-math.floor(self.speed/5), math.floor(self.speed/5))))
