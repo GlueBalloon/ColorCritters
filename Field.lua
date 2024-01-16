@@ -17,8 +17,7 @@ function FieldDrawer:drawAndSwapBuffer(field)
     self.lastBuffer = self.buffer
     --draw current buffer to screen
     setContext()
-    local r, g, b, a = self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b, self.backgroundColor.a
-    background(r,g,b,a)
+    background(self.backgroundColor)
     sprite(self.buffer, WIDTH/2, HEIGHT/2)
     --set context to new blank buffer 
     self.buffer = image(WIDTH, HEIGHT)

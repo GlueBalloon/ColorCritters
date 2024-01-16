@@ -193,6 +193,7 @@ function ColorCritter:reproduce(mateColor)
     self.timeToFertility, self.mateColorVariance, 
     self.mortality
     )
+    baby.mutationRate = self.mutationRate
     
     -- Apply mutations if they occur
     if math.random() < self.mutationRate then

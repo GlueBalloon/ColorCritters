@@ -19,8 +19,8 @@ end
 function Movers()
     function Field:draw()
         self:drawAndSwapBuffer()   
-        self.backgroundColor = color(21, 31, 21)
-        background(self.backgroundColor)   
+        self.drawer.backgroundColor = color(21, 31, 21)
+        background(self.drawer.backgroundColor)   
         for _, critter in ipairs(self.critters.all) do       
             -- Find a point outside the critter
             local outsidePoint = critter:pointOutsideSelf()       
@@ -58,6 +58,7 @@ end
 function Streakers()
     --critters that travel in a straight line, painting the screen
     function Field:draw()
+        
         for i, critter in ipairs(self.critters.all) do
             -- Calculate new position based on direction and speed
             local newPosition = critter.position + critter.direction * critter.speed 
@@ -72,8 +73,7 @@ function Streakers()
             fill(critter.color.r, critter.color.g, critter.color.b, critter.color.a)
             ellipse(critter.position.x, critter.position.y, critter.size)
         end
-        -- buffer swap
-        self:drawAndSwapBuffer()
+
         -- randomize direction on touch
         if CurrentTouch.state == BEGAN then
             for i, critter in pairs(self.critters.all) do
@@ -93,13 +93,16 @@ function AccidentalBlobs()
     --a fun accident that was kept because it's fun
     function Field:draw()
         
-        self:drawAndSwapBuffer()
+        if not self.isCustomSetup then
+            self.drawer.backgroundColor = color(25, 18, 18)
+            self.isCustomSetup = true
+        end
         
-        background(self.backgroundColor)
+        self:drawAndSwapBuffer()
         
         if #self.critters.all > 2000 then
             local new = ColorCritter()
-            new.mutationRate = 0.95
+            new.mutationRate = 0.0
             self.critters.all = {new}
         end
         local babies = {}
@@ -119,12 +122,12 @@ function AccidentalBlobs()
             bufferX, bufferY = math.min(WIDTH, math.max(1, bufferX)), math.min(HEIGHT, math.max(1, bufferY))
             local colorAtPoint = color(self.drawer.lastBuffer:get(bufferX, bufferY))
             -- check if that color is background color
-            if colorAtPoint == self.backgroundColor then
+            if colorAtPoint == color(0,0) then
                 --if so, store the new direction
                 critter.direction = outsideDirection
             else
                 -- if not, recalculate position without change of direction 
-                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.17
+                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.21
                 nextPosition = self:wrapIfNeeded(recalculated)
                 --and make baby!
                 local baby = critter:reproduce()

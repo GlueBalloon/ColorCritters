@@ -5,7 +5,7 @@ function BasicMating()
         if not self.isCustomSetup then
             local startingPop = math.max(WIDTH, HEIGHT) * 0.02
             self:resetCritters(startingPop)
-            self.backgroundColor = color(106, 38, 122)
+            self.drawer.backgroundColor = color(106, 38, 122)
             for _, critter in ipairs(self.critters.all) do
                 critter.speed = 12
                 critter.size = 70
@@ -52,7 +52,7 @@ function BasicMating()
         end
         
         setContext(self.drawer.buffer)
-        background(self.backgroundColor)
+        
         self.tickRate=self.tickRate*.9+.1/DeltaTime
         if self.tickRate < 30 then
             self.isCustomSetup = false
@@ -60,7 +60,7 @@ function BasicMating()
         local babies = {}
         for _, critter in ipairs(self.critters.all) do
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, color(0, 0))
             -- if it did return a baby, store it
             if babyMaybe ~= nil then
                 table.insert(babies, babyMaybe)
@@ -105,12 +105,11 @@ function JitteryBreeders()
         --setup functions
         if not self.isCustomSetup then
             self.isCustomSetup = true
-            self.backgroundColor = color(34, 34, 91)
+            self.drawer.backgroundColor = color(34, 34, 91)
             respawn()
         end
         
         setContext(self.drawer.buffer)
-        background(self.backgroundColor)
         
         local babies = {}
         
@@ -132,7 +131,7 @@ function JitteryBreeders()
             bufferX, bufferY = math.min(WIDTH, math.max(1, bufferX)), math.min(HEIGHT, math.max(1, bufferY))
             local colorAtPoint = color(self.drawer.lastBuffer:get(100,100))
             -- check if that color is background color
-            if colorAtPoint == self.backgroundColor or
+            if colorAtPoint == color(0,0) or
             colorAtPoint == critter.color then
                 --if so, store the new direction
                 critter.direction = outsideDirection
@@ -203,7 +202,7 @@ function PickyBreeders()
             critter.timeToFertility = math.random(10, 24)
             critter.mortality = math.random(25, 40)
             --colors
-            self.backgroundColor = color(61, 39, 82)
+            self.drawer.backgroundColor = color(61, 39, 82)
             critter.id = "b"
             local color1 = color(0, 21, 255)
             local color2 = color(0, 115, 255)
@@ -240,7 +239,7 @@ function PickyBreeders()
         generations = generations + 1
         -- set buffer
         setContext(self.drawer.buffer)
-        background(self.backgroundColor)
+
         -- go through the critters
         for i, critter in ipairs(self.critters.all) do  
             
@@ -252,7 +251,7 @@ function PickyBreeders()
             end 
             
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, color(0, 0))
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
@@ -270,7 +269,7 @@ function PickyBreeders()
                 table.insert(self.critters.all, baby)
             end
             for index=#deaths, 1, -1 do
-                table.remove(self.critters.all, index)
+              --  table.remove(self.critters.all, index)
             end
         end
             
@@ -342,20 +341,19 @@ function TinyBreeders()
         end
         if not self.isCustomSetup then
             self.isCustomSetup = true
-            self.backgroundColor = color(43, 26, 25)
+            self.drawer.backgroundColor = color(43, 26, 25)
             respawn()
         end
         
         self:drawAndSwapBuffer()
         setContext(self.drawer.buffer)
-        background(self.backgroundColor)
         
         local deaths = {}
         local babies = {}
         for _, critter in ipairs(self.critters.all) do
             
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, color(0, 0))
 
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
@@ -505,10 +503,6 @@ function PopulationTiedToTickRate()
         
         --draw buffer then set context to new buffer
         self:drawAndSwapBuffer()   
-    
-        --clear screen
-       -- background(self.drawer.backgroundColor)   
-       -- background(236, 76, 67, 0)
         
         --reset deaths, babies, and age tables
         self.deaths = {}
@@ -614,12 +608,13 @@ function GroupStreakers()
         
         function newCritter(pos)
             local new = ColorCritter()
-            new.mateColorVariance = 0.3
+            new.mateColorVariance = 1
             new.size = math.random(10, 42)
             new.speed = math.random(1, 9)
-            new.timeToFertility = math.random(20, 80)
-            new.mortality = new.timeToFertility * math.random(11, 50) * 0.1
+            new.timeToFertility = 0
+            new.mortality = 80 * math.random(11, 50) * 0.1
             new.position = pos or new.position
+            new.mutationRate = 1
             table.insert(field.critters.all, new)
         end
         function respawn()
@@ -630,7 +625,7 @@ function GroupStreakers()
         end
         if not self.isCustomSetup then
             self.isCustomSetup = true
-            self.backgroundColor = color(43, 26, 25)
+            self.drawer.backgroundColor = color(43, 26, 25)
             respawn()
             backgroundBlankImage = image(WIDTH,HEIGHT)
             backgroundClearCounter = 0
@@ -642,7 +637,7 @@ function GroupStreakers()
         -- apparently without this kludge I can't truly clear the screen after other demos
         if backgroundClearCounter and backgroundClearCounter < 4 then
             print("noo")
-            background(self.backgroundColor)
+            background(self.drawer.backgroundColor)
             self:drawAndSwapBuffer()
             sprite(backgroundBlankImage)
             backgroundClearCounter = backgroundClearCounter + 1
@@ -652,8 +647,16 @@ function GroupStreakers()
         self.critters.babies = {}
         self.critters.oldest = {}
         for _, critter in ipairs(self.critters.all) do
+            -- Calculate new position based on direction and speed
+            local newPosition = critter.position + critter.direction * critter.speed 
+            local oldDirection = critter.direction
+            -- Wrap around the edges if the new position is out of bounds
+            newPosition = self:wrapIfNeeded(newPosition)
+            -- force critter position
+            critter.position = newPosition
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, color(0,0))
+            critter.direction = oldDirection
             -- if it did return a baby, tag it and store it
             if babyMaybe ~= nil then
                 babyMaybe.id = critter.id
