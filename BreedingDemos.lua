@@ -433,7 +433,7 @@ function PopulationTiedToTickRate()
         if cycleBackgroundColors then
             -- Initialize variables
             local countUntilStarting = 3
-            local rateOfChange = 0.08
+            local rateOfChange = 0.2
             
             -- Update the time
             self.time = self.time + DeltaTime
@@ -602,7 +602,7 @@ end
 
 
 --just like the streakers demo except the critters multiply
-function GroupStreakers()
+function WigglyStreakers()
 
     function Field:draw()
         

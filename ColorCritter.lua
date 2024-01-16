@@ -146,22 +146,13 @@ end
 function ColorCritter:ageAndCheckMortality()
     self.age = self.age + 1
     self.fertilityCounter = self.fertilityCounter + 1
-    if self.age >= self.mortality then
-        self.alive = false
-        return false
-    end
-    return true
-end
-
-function ColorCritter:ageAndCheckMortality()
-    self.age = self.age + 1
-    self.fertilityCounter = self.fertilityCounter + 1
     
     if self.age >= self.mortality - 5 then  -- Start shrinking 5 updates before mortality
         self.isDying = true
     end
     
     if self.age >= self.mortality then
+        self.alive = false
         return false  -- Critter dies
     end
     return true

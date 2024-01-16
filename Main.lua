@@ -25,7 +25,7 @@ function setup()
     demoControl:addDemo(PickyBreeders, "Narrow-range Breeders")
     demoControl:addDemo(TinyBreeders, "Tiny Breeders")
     demoControl:addDemo(PopulationTiedToTickRate, "Frame Rate Caps Birth Rate")
-    demoControl:addDemo(GroupStreakers, "Group Streakers")
+    demoControl:addDemo(WigglyStreakers, "Wiggly Streakers")
 end
 
 function draw()
