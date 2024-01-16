@@ -102,6 +102,7 @@ function AccidentalBlobs()
         
         if #self.critters.all > 2000 then
             local new = ColorCritter()
+            new.size = new.size * math.random(10,20) * 0.1
             new.mutationRate = 0.0
             self.critters.all = {new}
         end
@@ -127,7 +128,7 @@ function AccidentalBlobs()
                 critter.direction = outsideDirection
             else
                 -- if not, recalculate position without change of direction 
-                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.21
+                local recalculated = critter.position + critter.direction * critter.speed * critter.size * 0.19
                 nextPosition = self:wrapIfNeeded(recalculated)
                 --and make baby!
                 local baby = critter:reproduce()
@@ -145,11 +146,11 @@ function AccidentalBlobs()
         if CurrentTouch.state == BEGAN then
             local new = ColorCritter()
             new.position = CurrentTouch.pos
-            field.critters = {new}
+            self.critters.all = {new}
         elseif CurrentTouch.state == CHANGED then
             local new = ColorCritter()
             new.position = CurrentTouch.pos
-            table.insert(field.critters, new)
+            table.insert(self.critters.all, new)
         end
     end
     field:draw()
