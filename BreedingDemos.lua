@@ -432,11 +432,10 @@ function PopulationTiedToTickRate()
         fertilityRange = {min = 120, max = 140}
     end
     function Field:draw()
-        
         if cycleBackgroundColors then
             -- Initialize variables
             local countUntilStarting = 3
-            local rateOfChange = 0.05
+            local rateOfChange = 0.08
             
             -- Update the time
             self.time = self.time + DeltaTime
@@ -447,9 +446,9 @@ function PopulationTiedToTickRate()
                 -- Start the color change
                 if not self.colorChangeStarted then
                     -- Calculate the offset based on the current background color
-                    self.rOffset = math.asin((self.backgroundColor.r - 128) / 127)
-                    self.gOffset = math.asin((self.backgroundColor.g - 128) / 127)
-                    self.bOffset = math.asin((self.backgroundColor.b - 128) / 127)
+                    self.rOffset = math.asin((self.drawer.backgroundColor.r - 128) / 127)
+                    self.gOffset = math.asin((self.drawer.backgroundColor.g - 128) / 127)
+                    self.bOffset = math.asin((self.drawer.backgroundColor.b - 128) / 127)
                     
                     -- Mark the color change as started
                     self.colorChangeStarted = true
@@ -462,7 +461,7 @@ function PopulationTiedToTickRate()
                 local r = math.sin(adjustedTime * rateOfChange + self.rOffset) * 127 + 128
                 local g = math.sin(adjustedTime * rateOfChange * 2 + self.gOffset) * 127 + 128
                 local b = math.sin(adjustedTime * rateOfChange * 3 + self.bOffset) * 127 + 128
-                -- self.backgroundColor = color(r, g, b)
+                self.drawer.backgroundColor = color(r, g, b)
             end
         end
 
@@ -488,10 +487,7 @@ function PopulationTiedToTickRate()
         end
         if not self.isCustomSetup then
             self.isCustomSetup = true
-            self.backgroundColor = color(36, 44, 59)
-            self.backgroundColor = color(52, 36, 59)
-            self.backgroundColor = color(16, 21, 16)
-            
+            self.drawer.backgroundColor = color(25, 19, 27)
             respawn()
             parameter.clear()
             parameter.watch("tickRate")
@@ -500,20 +496,19 @@ function PopulationTiedToTickRate()
             parameter.watch("#field.critters.babies")
             parameter.watch("averageCritterSize")
             parameter.watch("medianCritterSize")
-            parameter.boolean("cycleBackgroundColors", false)
+            parameter.boolean("cycleBackgroundColors", true)
         end
         
         --basic draw cycle prep
         pushStyle()
         noStroke()
         
+        --draw buffer then set context to new buffer
         self:drawAndSwapBuffer()   
-        
-        --draw to buffer
-        setContext(self.drawer.buffer)
-        
+    
         --clear screen
-        background(self.backgroundColor)   
+       -- background(self.drawer.backgroundColor)   
+       -- background(236, 76, 67, 0)
         
         --reset deaths, babies, and age tables
         self.deaths = {}
@@ -530,7 +525,7 @@ function PopulationTiedToTickRate()
                 goto nextCritter
             end
             -- call critter's own draw function, which may return a baby
-            local babyMaybe = critter:draw(self.drawer.lastBuffer, self.backgroundColor)
+            local babyMaybe = critter:draw(self.drawer.lastBuffer, color(0, 0))
             -- if it did return a baby, store it
             if babyMaybe ~= nil then
                 table.insert(self.critters.babies, babyMaybe)

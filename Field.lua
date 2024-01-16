@@ -1,12 +1,12 @@
 -- FieldDrawer class
 FieldDrawer = class()
 
-function FieldDrawer:init(field)
+function FieldDrawer:init(field, backgroundColor)
     self.field = field
     self.buffer = image(WIDTH, HEIGHT)
-    setContext(self.buffer)
-    background(field.backgroundColor)
+    self.backgroundColor = backgroundColor or color(255, 0, 204)
     self.lastBuffer = self.buffer
+   -- setContext(self.buffer)
 end
 
 function FieldDrawer:drawAndSwapBuffer(field)
@@ -17,14 +17,13 @@ function FieldDrawer:drawAndSwapBuffer(field)
     self.lastBuffer = self.buffer
     --draw current buffer to screen
     setContext()
+    local r, g, b, a = self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b, self.backgroundColor.a
+    background(r,g,b,a)
     sprite(self.buffer, WIDTH/2, HEIGHT/2)
     --set context to new blank buffer 
     self.buffer = image(WIDTH, HEIGHT)
     setContext(self.buffer)
 end
-
-
-
 
 
 -- PopTracker class
@@ -82,12 +81,12 @@ end
 Field = class()
 
 function Field:init(critters, bgColor)
-    self.backgroundColor = bgColor or color(24, 27, 40)
+    self.time = 0
     self.critters = CritterTracker(critters)
     self.popHistory = {}
     self.numToCull = 0
     self.isCustomSetup = false
-    self.drawer = FieldDrawer(self)
+    self.drawer = FieldDrawer(self, bgColor)
     self.tickRate = 0
     self.popTracker = PopTracker()
 end
