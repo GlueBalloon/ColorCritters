@@ -190,7 +190,7 @@ function weightedHueToHue(weightedHue)
 end
 
 
--- Function to generate a random color
+-- Function to generate a random color avoiding too much green
 function randomColor()
     -- Generate a random weighted hue
     local weightedHue = math.random()
@@ -207,6 +207,16 @@ function randomColor()
 
     -- Return the new color
     return hsbToColor(hue, saturation, brightness)
+end
+
+-- Function to generate a random color in a pleasing range
+function randomNOTColor()
+    -- Generate random saturation and brightness values
+    local saturation = math.random(58,100) * 0.01 --not too bright now!
+    local brightness = math.random(62,100) * 0.01 --not too dark now!
+    
+    -- Return the new color
+    return hsbToColor(math.random(360), saturation, brightness)
 end
 
 function randomizeColorWithinVariance(aColor, variance)
@@ -261,7 +271,7 @@ function colorToHSB(aColor)
     
     local brightness = max
     
-    return hue, saturation, brightness
+    return vec3(hue, saturation, brightness)
 end
 
 function hsbToColor(h, s, b)
@@ -658,3 +668,57 @@ function testHSBtoRGB()
     print("All HSB to RGB tests passed!")
 end
 
+function calculateMiddleHue(hue1, hue2)
+    -- Adjust hues for wrapping
+    if math.abs(hue1 - hue2) > 180 then
+        if hue1 > hue2 then
+            hue2 = hue2 + 360
+        else
+            hue1 = hue1 + 360
+        end
+    end
+    
+    -- Calculate the middle hue
+    local middleHue = (hue1 + hue2) / 2
+    return middleHue % 360
+end
+
+function randomColorBetween(color1, color2)
+    -- Convert RGB to HSB
+    local hsb1 = colorToHSB(color1)
+    local hsb2 = colorToHSB(color2)
+    
+    -- Add a random value between -n and n to both hues
+    local n = 10
+    local randomHueAdjustment = math.random(-n, n)
+    local adjustedHue1 = (hsb1.x + randomHueAdjustment) % 360
+    local adjustedHue2 = (hsb2.x + randomHueAdjustment) % 360
+    
+    -- Calculate the middle hue with wrapping
+    local newHue = calculateMiddleHue(adjustedHue1, adjustedHue2)
+    
+    -- Add a random value between -m and m to saturation and brightness
+    local m = 0.04
+    local mSubtractor = m * 2
+    local lowClamp = 0.25
+    local randomSBAdjustment = math.random() * mSubtractor - m
+    local adjustedSat1 = clamp(hsb1.y + randomSBAdjustment, lowClamp, 1)
+    local adjustedSat2 = clamp(hsb2.y + randomSBAdjustment, lowClamp, 1)
+    local adjustedBri1 = clamp(hsb1.z + randomSBAdjustment, lowClamp, 1)
+    local adjustedBri2 = clamp(hsb2.z + randomSBAdjustment, lowClamp, 1)
+    
+    -- Calculate the midpoints for saturation and brightness
+    local newSat = (adjustedSat1 + adjustedSat2) / 2
+    local newBri = (adjustedBri1 + adjustedBri2) / 2
+    
+    --randomly max saturation and brightness
+    newSat = math.random() < 0.25 and 1 or newSat
+    newBri = math.random() < 0.25 and 1 or newBri
+    
+    -- Convert back to RGB
+    return hsbToColor(newHue, newSat, newBri)
+end
+
+function clamp(value, minVal, maxVal)
+    return math.max(minVal, math.min(maxVal, value))
+end
