@@ -7,8 +7,8 @@ function BasicMating()
             self:resetCritters(startingPop)
             self.drawer.backgroundColor = color(106, 38, 122)
             for _, critter in ipairs(self.critters.all) do
-                critter.speed = 12
-                critter.size = 70
+                critter.size = math.max(WIDTH, HEIGHT) * 0.09
+                critter.speed = math.random(8, 16)
                 critter.mateColorVariance = 1.0
                 critter.color = color(141, 0, 255)
                 if math.random() > 0.5 then
@@ -51,10 +51,8 @@ function BasicMating()
             return
         end
         
-        setContext(self.drawer.buffer)
-        
         self.tickRate=self.tickRate*.9+.1/DeltaTime
-        if self.tickRate < 30 then
+        if #self.critters.all > 700 or self.tickRate < 15 then
             self.isCustomSetup = false
         end
         local babies = {}

@@ -111,7 +111,7 @@ end
 
 function ColorCritter:getNextPosition(foundSomething, outsideDirection)
     --put a little variance in speed
-    local randomizedSpeed = self.speed + (math.random(100) * 0.001)
+    local randomizedSpeed = self.speed + (math.random(math.min(WIDTH, HEIGHT)) * 0.00001)
     --calculate new position 
     local nextPosition = self.position + outsideDirection * randomizedSpeed
     --wrap it if needed
