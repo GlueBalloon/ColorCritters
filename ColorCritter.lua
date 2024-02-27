@@ -175,7 +175,7 @@ end
 function ColorCritter:reproduce(mateColor)
     
     local mateColor = mateColor or self.color
-    local babyColor = randomColorAvoidingMuddinessBetween(self.color, mateColor)
+    local babyColor = randomColorBetween(self.color, mateColor)
     
     -- Create a new critter with the same properties
     local baby = ColorCritter(
@@ -190,7 +190,7 @@ function ColorCritter:reproduce(mateColor)
     if math.random() < self.mutationRate then
         local ogColor = baby.color
         local spontaneousVariation = randomColor()
-        baby.color = randomColorAvoidingMuddinessBetween(baby.color, spontaneousVariation)
+        baby.color = randomColorBetween(baby.color, spontaneousVariation)
         printRarely("(printRarely) mutation at "..tostring(self.position)..
         "\n  - color: "..tostring(ogColor).. "\n  - to color: "..tostring(baby.color))
         baby.speed = math.max(0.1, math.min(40, self.speed + math.random(-math.floor(self.speed/5), math.floor(self.speed/5))))

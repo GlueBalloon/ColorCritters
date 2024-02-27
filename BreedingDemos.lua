@@ -409,21 +409,21 @@ function PopulationTiedToTickRate()
         --essentially mating with their own anti-aliasing pixels
         sensoryRange = {min = 1, max = 3}
         matingVariance = 0.19
-        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.029)}
+        sizeRange = {min = 8, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.029)}
         speedFactor = 0.015
-        fertilityRange = {min = 80, max = 90}
+        fertilityRange = {min = 120, max = 180}
     elseif behaviorSetting == 2 then
         --note: q range of 1 lets critters asexually reproduce
         --essentially mating with their own anti-aliasing pixels
         sensoryRange = {min = 1, max = 3}
         matingVariance = 0.05
-        sizeRange = {min = 3, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.04)}
+        sizeRange = {min = 8, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.04)}
         speedFactor = 0.02
-        fertilityRange = {min = 80, max = 90}
+        fertilityRange = {min = 100, max = 190}
     else
         sensoryRange = {min = 5, max = 7}
         matingVariance = 0.37
-        sizeRange = {min = 2, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.024)}
+        sizeRange = {min = 8, max = math.ceil(math.max(WIDTH, HEIGHT) * 0.024)}
         speedFactor = 0.027
         fertilityRange = {min = 120, max = 140}
     end

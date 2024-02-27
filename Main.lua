@@ -10,6 +10,12 @@ Actual Main tab.
 
 
 function setup()
+    screen = {x=0,y=0,w=WIDTH,h=HEIGHT} 
+    sensor = Sensor {parent=screen} -- tell the object you want to be listening to touches, here the screen
+    sensor:onTap( function(event) print("tap") end )
+    sensor:onZoom( function(event)
+        print( event.dw, event.dh) end )
+    
     field = Field()
     field:resetCritters()
     demoControl = DemoControl()
@@ -53,4 +59,5 @@ end
 
 function touched(touch)
     demoControl:touched(touch)
+    sensor:touched(touch)
 end

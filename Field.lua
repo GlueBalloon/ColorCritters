@@ -24,6 +24,40 @@ function FieldDrawer:drawAndSwapBuffer(field)
     setContext(self.buffer)
 end
 
+function drawWithWrapAndZoom(bufferSprite, offsetX, offsetY, zoomFactor)
+    local scaledWidth = bufferSprite.width * zoomFactor
+    local scaledHeight = bufferSprite.height * zoomFactor
+
+    -- Central sprite
+    sprite(bufferSprite, WIDTH / 2 + offsetX, HEIGHT / 2 + offsetY, scaledWidth, scaledHeight)
+
+    -- Horizontal wrap
+    if offsetX > 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX - scaledWidth, HEIGHT / 2 + offsetY, scaledWidth, scaledHeight)
+    elseif offsetX < 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX + scaledWidth, HEIGHT / 2 + offsetY, scaledWidth, scaledHeight)
+    end
+
+    -- Vertical wrap
+    if offsetY > 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX, HEIGHT / 2 + offsetY - scaledHeight, scaledWidth, scaledHeight)
+    elseif offsetY < 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX, HEIGHT / 2 + offsetY + scaledHeight, scaledWidth, scaledHeight)
+    end
+
+    -- Diagonal wrap
+    if offsetX > 0 and offsetY > 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX - scaledWidth, HEIGHT / 2 + offsetY - scaledHeight, scaledWidth, scaledHeight)
+    elseif offsetX < 0 and offsetY < 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX + scaledWidth, HEIGHT / 2 + offsetY + scaledHeight, scaledWidth, scaledHeight)
+    elseif offsetX > 0 and offsetY < 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX - scaledWidth, HEIGHT / 2 + offsetY + scaledHeight, scaledWidth, scaledHeight)
+    elseif offsetX < 0 and offsetY > 0 then
+        sprite(bufferSprite, WIDTH / 2 + offsetX + scaledWidth, HEIGHT / 2 + offsetY - scaledHeight, scaledWidth, scaledHeight)
+    end
+end
+
+
 
 -- PopTracker class
 PopTracker = class()
